@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>UIStatusBarStyle</key>
+    <string>UIStatusBarStyleDefault</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>NSPasteboardUsageDescription</key>
+    <string>ClipWizard needs access to the clipboard to monitor clipboard activity and provide sanitization features.</string>
+</dict>
+</plist>
