@@ -110,7 +110,7 @@ struct ClipboardHistoryView: View {
             }
             .padding()
         }
-        .frame(width: 350, height: 450)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .sheet(isPresented: $showingDetailView) {
             if let item = selectedItem {
                 ClipboardItemDetailView(item: item)

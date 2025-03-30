@@ -89,6 +89,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if popover == nil {
             let popover = NSPopover()
             popover.behavior = .transient
+            popover.contentSize = NSSize(width: 400, height: 400) // Set fixed size for the popover
             self.popover = popover
         }
         
