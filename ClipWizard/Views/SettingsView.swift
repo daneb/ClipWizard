@@ -92,7 +92,7 @@ struct SettingsView: View {
             }
             .padding()
         }
-        .frame(width: 800, height: 500)
+        .frame(width: 800, height: 450)
         .onAppear {
             maxHistoryItems = UserDefaults.standard.integer(forKey: "maxHistoryItems")
             if maxHistoryItems == 0 {
@@ -111,7 +111,7 @@ struct GeneralSettingsView: View {
         Form {
             Section(header: Text("Clipboard History").font(.headline)) {
                 Stepper("Maximum history items: \(maxHistoryItems)", value: $maxHistoryItems, in: 10...200, step: 10)
-                    .onChange(of: maxHistoryItems) { newValue in
+                    .onChange(of: maxHistoryItems) { oldValue, newValue in
                         UserDefaults.standard.set(newValue, forKey: "maxHistoryItems")
                         clipboardMonitor.setMaxHistoryItems(newValue)
                     }
@@ -124,7 +124,7 @@ struct GeneralSettingsView: View {
             
             Section(header: Text("Monitoring").font(.headline)) {
                 Toggle("Enable clipboard monitoring", isOn: $monitoringEnabled)
-                    .onChange(of: monitoringEnabled) { newValue in
+                    .onChange(of: monitoringEnabled) { oldValue, newValue in
                         if newValue {
                             clipboardMonitor.startMonitoring()
                         } else {
@@ -360,16 +360,16 @@ struct RuleEditView: View {
                                         RoundedRectangle(cornerRadius: 5)
                                             .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                                     )
-                                    .onChange(of: testInput) { _ in
+                                    .onChange(of: testInput) { oldValue, newValue in
                                         testPattern()
                                     }
-                                    .onChange(of: pattern) { _ in
+                                    .onChange(of: pattern) { oldValue, newValue in
                                         testPattern()
                                     }
-                                    .onChange(of: ruleType) { _ in
+                                    .onChange(of: ruleType) { oldValue, newValue in
                                         testPattern()
                                     }
-                                    .onChange(of: replacementValue) { _ in
+                                    .onChange(of: replacementValue) { oldValue, newValue in
                                         testPattern()
                                     }
                                 

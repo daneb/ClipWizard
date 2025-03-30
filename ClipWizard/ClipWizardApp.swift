@@ -119,7 +119,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             if popover.isShown {
                 popover.close()
             } else {
-                popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+                // Ensure the popover appears below the menu bar with enough space
+                popover.show(relativeTo: button.bounds, of: button, preferredEdge: .maxY)
+                
+                // Set the popover position to make sure it's fully visible
+                if let popoverWindow = popover.contentViewController?.view.window {
+                    let screenFrame = NSScreen.main?.visibleFrame ?? .zero
+                    var newFrame = popoverWindow.frame
+                    
+                    // Ensure window is not positioned too high
+                    if newFrame.origin.y + newFrame.height > screenFrame.height {
+                        newFrame.origin.y = screenFrame.height - newFrame.height - 10
+                    }
+                    
+                    // Ensure window is not positioned too low
+                    if newFrame.origin.y < screenFrame.origin.y {
+                        newFrame.origin.y = screenFrame.origin.y + 10
+                    }
+                    
+                    popoverWindow.setFrame(newFrame, display: true)
+                }
             }
         }
     }

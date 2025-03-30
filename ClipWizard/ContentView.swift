@@ -33,7 +33,9 @@ struct ContentView: View {
                 .tag(1)
         }
         .padding()
-        .frame(width: 400, height: 500)
+        .frame(width: 400, height: 450)
+        // Make sure the view stays within screen bounds
+        .fixedSize(horizontal: true, vertical: false)
     }
 }
 
