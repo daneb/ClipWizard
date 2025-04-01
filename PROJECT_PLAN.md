@@ -96,9 +96,10 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 - [x] Launch-at-login functionality
   - [x] Implement service registration with macOS
   - [x] Add toggle in settings
-- [ ] Import/export functionality for rules
-  - [ ] Add export to JSON/plist
-  - [ ] Add import from file
+- [x] Import/export functionality for rules
+  - [x] Add export to JSON format
+  - [x] Add import from file
+  - [x] Add sharing UI
 - [ ] Advanced image handling
   - [x] Basic image display in history
   - [ ] Image preview enhancements
@@ -142,13 +143,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 
 ## Next Steps
 
-1. **Implement Rule Import/Export**
-   - [ ] Create JSON format for rule export
-   - [ ] Add import functionality with validation
-   - [ ] Allow sharing of rule collections
-   - [ ] Implement file picking and saving interfaces
-
-2. **UI Polish and Refinement**
+1. **UI Polish and Refinement**
    - [x] Fix popover positioning issues
    - [x] Improve settings layout for better usability
    - [x] Enhance hotkeys UI for better layout and readability
@@ -156,7 +151,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
    - [ ] Add visual polish and animations
    - [ ] Improve dark mode support and consistency
 
-3. **Testing & Optimization**
+2. **Testing & Optimization**
    - [ ] Performance testing with large clipboard histories
    - [ ] Memory usage optimization
    - [ ] Test on different macOS versions (Ventura and Sonoma)
@@ -172,7 +167,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 2. **Beta Release** (Current Stage) 🔄
    - [x] Keyboard shortcuts implemented
    - [x] Launch-at-login functionality working
-   - [ ] All remaining major features implemented
+   - [x] Rule import/export functionality implemented
    - [ ] UI fully polished
    - [ ] Initial user testing completed
 

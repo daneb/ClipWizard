@@ -48,7 +48,7 @@ ClipWizard is currently in beta. All core functionality is working, and we're fo
 ### Phase 3: Advanced Features 🔄
 - [x] Keyboard shortcut support
 - [x] Launch-at-login functionality
-- [ ] Export/import of rules
+- [x] Export/import of rules
 - [ ] Clipboard synchronization across devices
 - [ ] Advanced image handling
 
