@@ -109,4 +109,41 @@ class SanitizationService: ObservableObject {
             rules = SanitizationRuleFactory.createDefaultRules()
         }
     }
+    
+    // MARK: - Import and Export Functions
+    
+    // Export rules to JSON file
+    func exportRules(completion: @escaping (Result<URL, Error>) -> Void) {
+        RuleImportExportService.shared.exportRules(rules, completion: completion)
+    }
+    
+    // Import rules from JSON file
+    func importRules(from url: URL) -> Result<Void, RuleImportError> {
+        let result = RuleImportExportService.shared.importRules(from: url)
+        
+        switch result {
+        case .success(let importedRules):
+            // Merge with existing rules or replace them
+            self.rules = importedRules
+            saveRules() // Save to UserDefaults
+            return .success(())
+            
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+    
+    // Show the save panel for exporting rules
+    func showExportSavePanel() -> URL? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd"
+        let suggestedFileName = "ClipWizard_Rules_\(dateFormatter.string(from: Date())).json"
+        
+        return RuleImportExportService.shared.showSavePanel(suggestedFileName: suggestedFileName)
+    }
+    
+    // Show the open panel for importing rules
+    func showImportOpenPanel() -> URL? {
+        return RuleImportExportService.shared.showOpenPanel()
+    }
 }

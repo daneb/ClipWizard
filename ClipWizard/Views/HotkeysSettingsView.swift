@@ -4,6 +4,7 @@ struct HotkeysSettingsView: View {
     @ObservedObject var hotkeyManager: HotkeyManager
     @State private var recordingHotkeyFor: String? = nil
     @State private var tempKeyCombo: (key: String, modifiers: String) = ("", "")
+    @State private var lastCleared: String? = nil
     
     // Defined hotkey actions
     private let hotkeyOptions = [
@@ -39,6 +40,7 @@ struct HotkeysSettingsView: View {
                             label: hotkeyOptions[key] ?? "",
                             keyCombo: hotkeyManager.getHotkeyCombo(for: key),
                             isRecording: recordingHotkeyFor == key,
+                            isClearing: lastCleared == key,
                             tempKeyCombo: tempKeyCombo,
                             recorderView: recordingHotkeyFor == key ? 
                                 AnyView(HotkeyRecorderView(keyCombo: $tempKeyCombo)
@@ -51,7 +53,16 @@ struct HotkeysSettingsView: View {
                             onClear: {
                                 // Clear this hotkey
                                 hotkeyManager.unregisterHotkey(id: key)
-                                hotkeyManager.saveHotkeys()
+                                
+                                // Set this as the last cleared hotkey for visual feedback
+                                lastCleared = key
+                                
+                                // Reset the lastCleared state after a delay
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    if lastCleared == key {
+                                        lastCleared = nil
+                                    }
+                                }
                             },
                             onSave: { keyCombo in
                                 // Save the recorded hotkey
@@ -105,6 +116,7 @@ struct HotkeyRow: View {
     let label: String
     let keyCombo: (key: String, modifiers: String)?
     let isRecording: Bool
+    let isClearing: Bool
     let tempKeyCombo: (key: String, modifiers: String)
     let recorderView: AnyView?
     let onRecord: () -> Void
@@ -227,12 +239,28 @@ struct HotkeyRow: View {
             }
         }
         .padding(10)
-        .background(isRecording ? Color.accentColor.opacity(0.05) : Color.clear)
+        .background(
+            Group {
+                if isRecording {
+                    Color.accentColor.opacity(0.05)
+                } else if isClearing {
+                    Color.red.opacity(0.05)
+                } else {
+                    Color.clear
+                }
+            }
+        )
         .cornerRadius(8)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(isRecording ? Color.accentColor.opacity(0.2) : Color.clear, lineWidth: 1)
+                .stroke(lineWidth: 1)
+                .foregroundColor(
+                    isRecording ? Color.accentColor.opacity(0.2) :
+                    isClearing ? Color.red.opacity(0.2) :
+                    Color.clear
+                )
         )
+        .animation(.easeInOut(duration: 0.2), value: isClearing)
     }
     
     // Format key combo for display

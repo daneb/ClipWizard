@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var sanitizationService: SanitizationService
     @ObservedObject var clipboardMonitor: ClipboardMonitor
-    @State private var selectedTab: Int = 0
+    @State var selectedTab: Int = 0
     
     init(sanitizationService: SanitizationService, clipboardMonitor: ClipboardMonitor) {
         self.sanitizationService = sanitizationService

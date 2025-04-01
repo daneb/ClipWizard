@@ -148,6 +148,10 @@ class HotkeyManager: ObservableObject {
         // Remove from our dictionaries
         registeredHotkeys.removeValue(forKey: id)
         hotkeyActions.removeValue(forKey: id)
+        hotkeyStrings.removeValue(forKey: id)
+        
+        // Make sure we save the updated hotkeys to UserDefaults
+        saveHotkeys()
     }
     
     func unregisterAllHotkeys() {

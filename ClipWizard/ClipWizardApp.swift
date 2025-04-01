@@ -33,12 +33,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Create the content view
         contentView = ContentView(sanitizationService: sanitizationService!, clipboardMonitor: clipboardMonitor!)
         
+        // Create the popover
+        let popover = NSPopover()
+        popover.behavior = .transient
+        popover.contentSize = NSSize(width: 400, height: 400)
+        self.popover = popover
+        
         // Create the status item in the menu bar
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         
         if let statusButton = statusItem?.button {
             statusButton.image = NSImage(systemSymbolName: "clipboard", accessibilityDescription: "ClipWizard")
             statusButton.action = #selector(togglePopover)
+            statusButton.target = self
         }
         
         // Set up the menu
@@ -78,11 +85,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func showHistory() {
-        showPopoverWithView(index: 0)
+        closeMenu()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.showPopoverWithView(index: 0)
+        }
     }
     
     @objc func showSettings() {
-        showPopoverWithView(index: 1)
+        closeMenu()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.showPopoverWithView(index: 1)
+        }
     }
     
     @objc func about() {
@@ -90,11 +103,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func togglePopover() {
-        if let menu = statusItem?.menu {
-            statusItem?.button?.performClick(nil)
+        if let popover = popover, popover.isShown {
+            popover.close()
         } else {
             showPopoverWithView(index: 0)
         }
+    }
+    
+    private func closeMenu() {
+        // Close the menu if it's open
+        statusItem?.menu?.cancelTracking()
     }
     
     func showPopoverWithView(index: Int) {
@@ -111,32 +129,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             contentView = ContentView(sanitizationService: sanitizationService!, clipboardMonitor: clipboardMonitor!)
         }
         
-        // Create a wrapper view to set the selected tab
-        let hostingController = NSHostingController(rootView: 
-            contentView!
-                .onAppear {
-                    // Set the selected tab index
-                    if let contentView = self.contentView {
-                        // Use reflection to set the selectedTab property
-                        if let mirror = Mirror(reflecting: contentView).children.first(where: { $0.label == "_selectedTab" }),
-                           let selectedTab = mirror.value as? State<Int> {
-                            selectedTab.wrappedValue = index
-                        }
-                    }
-                }
-        )
+        // Update the selected tab
+        if let contentView = self.contentView {
+            let selectedTabKeyPath = \ContentView.selectedTab
+            if contentView.selectedTab != index {
+                contentView.selectedTab = index
+            }
+        }
         
+        // Create a hosting controller with the content view
+        let hostingController = NSHostingController(rootView: contentView!)
         popover?.contentViewController = hostingController
         
         // Show the popover
         if let popover = popover, let button = statusItem?.button {
+            // Close menu if it's open
+            statusItem?.menu?.cancelTracking()
+            
+            // Temporarily set menu to nil to prevent it from showing
+            let savedMenu = statusItem?.menu
+            statusItem?.menu = nil
+            
             if popover.isShown {
                 popover.close()
             } else {
-                // Ensure the popover appears below the menu bar with enough space
+                // Show the popover
                 popover.show(relativeTo: button.bounds, of: button, preferredEdge: .maxY)
                 
-                // Set the popover position to make sure it's fully visible
+                // Position the popover properly
                 if let popoverWindow = popover.contentViewController?.view.window {
                     let screenFrame = NSScreen.main?.visibleFrame ?? .zero
                     var newFrame = popoverWindow.frame
@@ -153,6 +173,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     
                     popoverWindow.setFrame(newFrame, display: true)
                 }
+            }
+            
+            // Restore the menu after a short delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                self?.statusItem?.menu = savedMenu
             }
         }
     }

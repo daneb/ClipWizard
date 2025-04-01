@@ -198,6 +198,9 @@ struct SanitizationRulesView: View {
     @ObservedObject var sanitizationService: SanitizationService
     @Binding var selectedRule: SanitizationRule?
     @Binding var isAddingNewRule: Bool
+    @State private var showingImportAlert = false
+    @State private var importError: RuleImportError? = nil
+    @State private var showingExportSuccessAlert = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -210,6 +213,19 @@ struct SanitizationRulesView: View {
                     
                     Spacer()
                     
+                    // Import button
+                    Button(action: importRules) {
+                        Label("Import", systemImage: "square.and.arrow.down")
+                    }
+                    .buttonStyle(.borderless)
+                    
+                    // Export button
+                    Button(action: exportRules) {
+                        Label("Export", systemImage: "square.and.arrow.up")
+                    }
+                    .buttonStyle(.borderless)
+                    
+                    // Add rule button
                     Button(action: {
                         isAddingNewRule = true
                         selectedRule = nil
@@ -218,6 +234,7 @@ struct SanitizationRulesView: View {
                     }
                     .buttonStyle(.borderless)
                     
+                    // Reset button
                     Button(action: {
                         sanitizationService.resetToDefaultRules()
                         sanitizationService.saveRules()
@@ -274,6 +291,59 @@ struct SanitizationRulesView: View {
                         }
                     }
                 }
+            }
+        }
+        .alert("Import Error", isPresented: $showingImportAlert, presenting: importError) { error in
+            Button("OK", role: .cancel) {}
+        } message: { error in
+            Text(error.localizedDescription)
+        }
+        .alert("Export Successful", isPresented: $showingExportSuccessAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Rules have been successfully exported.")
+        }
+    }
+    
+    // Method to handle rules import
+    private func importRules() {
+        guard let url = sanitizationService.showImportOpenPanel() else { return }
+        
+        let result = sanitizationService.importRules(from: url)
+        switch result {
+        case .success:
+            // Successfully imported rules, nothing to do
+            break
+        case .failure(let error):
+            // Show error alert
+            importError = error
+            showingImportAlert = true
+        }
+    }
+    
+    // Method to handle rules export
+    private func exportRules() {
+        guard let saveURL = sanitizationService.showExportSavePanel() else { return }
+        
+        sanitizationService.exportRules { result in
+            switch result {
+            case .success(let tempURL):
+                do {
+                    // Copy from temp file to the user selected location
+                    if FileManager.default.fileExists(atPath: saveURL.path) {
+                        try FileManager.default.removeItem(at: saveURL)
+                    }
+                    try FileManager.default.copyItem(at: tempURL, to: saveURL)
+                    
+                    // Show success alert
+                    DispatchQueue.main.async {
+                        showingExportSuccessAlert = true
+                    }
+                } catch {
+                    print("Error saving rules file: \(error)")
+                }
+            case .failure(let error):
+                print("Error exporting rules: \(error)")
             }
         }
     }
