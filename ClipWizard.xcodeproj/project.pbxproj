@@ -30,6 +30,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		A74572DF2D9BC22F00160C0F /* ClipWizard.iconset */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ClipWizard.iconset;
+			sourceTree = "<group>";
+		};
 		A7C10EE82D99B80D00770125 /* ClipWizard */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ClipWizard;
@@ -75,6 +80,7 @@
 		A7C10EDD2D99B80D00770125 = {
 			isa = PBXGroup;
 			children = (
+				A74572DF2D9BC22F00160C0F /* ClipWizard.iconset */,
 				A7C10EE82D99B80D00770125 /* ClipWizard */,
 				A7C10EFA2D99B80F00770125 /* ClipWizardTests */,
 				A7C10F042D99B80F00770125 /* ClipWizardUITests */,
@@ -108,6 +114,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				A74572DF2D9BC22F00160C0F /* ClipWizard.iconset */,
 				A7C10EE82D99B80D00770125 /* ClipWizard */,
 			);
 			name = ClipWizard;
@@ -392,15 +399,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = ClipWizard/ClipWizard.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"ClipWizard/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = ClipWizard.iconset;
 				DEVELOPMENT_TEAM = JB8XBTWLW3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ClipWizard;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -419,15 +429,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = ClipWizard/ClipWizard.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"ClipWizard/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = ClipWizard.iconset;
 				DEVELOPMENT_TEAM = JB8XBTWLW3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ClipWizard;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

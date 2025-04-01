@@ -8,125 +8,163 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 
 ## Core Requirements
 
-1. **Clipboard Monitoring**: Automatically track all clipboard activity
-2. **Sanitization**: Detect and sanitize sensitive information like passwords, API keys, etc.
-3. **User Interface**: Provide an intuitive interface for accessing clipboard history and managing settings
-4. **Extensibility**: Allow users to create and manage their own sanitization rules
-5. **Performance**: Ensure minimal system impact while running in the background
+- [x] **Clipboard Monitoring**: Automatically track all clipboard activity
+- [x] **Sanitization**: Detect and sanitize sensitive information like passwords, API keys, etc.
+- [x] **User Interface**: Provide an intuitive interface for accessing clipboard history and managing settings
+- [x] **Extensibility**: Allow users to create and manage their own sanitization rules
+- [ ] **Performance**: Ensure minimal system impact while running in the background
 
 ## Architecture
 
 ### 1. Data Models
 
 #### ClipboardItem
-- Properties: ID, timestamp, content type (text/image), original content, sanitized content
-- Responsible for representing individual clipboard entries
+- [x] Properties: ID, timestamp, content type (text/image), original content, sanitized content
+- [x] Responsible for representing individual clipboard entries
 
 #### SanitizationRule
-- Properties: ID, name, pattern (regex), rule type, replacement value, enabled status
-- Responsible for defining how specific types of sensitive data should be handled
+- [x] Properties: ID, name, pattern (regex), rule type, replacement value, enabled status
+- [x] Responsible for defining how specific types of sensitive data should be handled
 
 ### 2. Services
 
 #### ClipboardMonitor
-- Responsibilities: Monitor clipboard changes, add items to history, manage history size
-- Dependencies: SanitizationService
+- [x] Monitor clipboard changes and detect content type
+- [x] Add items to history with proper metadata
+- [x] Manage history size according to user preferences
+- [x] Provide methods to clear history and copy items back to clipboard
 
 #### SanitizationService
-- Responsibilities: Apply sanitization rules, manage rule collection, save/load rules
-- Dependencies: SanitizationRule models
+- [x] Apply sanitization rules using regex patterns
+- [x] Manage different sanitization types (mask, rename, obfuscate, remove)
+- [x] Provide CRUD operations for rules
+- [x] Save/load rules from UserDefaults
 
 #### HotkeyManager
-- Responsibilities: Register/handle system-wide keyboard shortcuts
-- Dependencies: None
+- [x] Base implementation for registering system-wide keyboard shortcuts
+- [ ] Connect hotkeys to app functionality
+- [ ] Provide user interface for customizing shortcuts
 
 ### 3. User Interface
 
 #### Main Views
-- ClipboardHistoryView: Display and search clipboard history
-- SettingsView: Configure app behavior and manage sanitization rules
-- RuleEditView: Create and edit sanitization rules
+- [x] ClipboardHistoryView: Display and search clipboard history
+- [x] SettingsView: Configure app behavior and manage sanitization rules
+- [x] RuleEditView: Create and edit sanitization rules
 
 #### Components
-- ClipboardItemRow: Display individual clipboard items in the history list
-- ClipboardItemDetailView: Show detailed view of clipboard items
+- [x] ClipboardItemRow: Display individual clipboard items in the history list
+- [x] ClipboardItemDetailView: Show detailed view of clipboard items
+- [x] Tab-based navigation for settings
+- [x] Menu bar integration with dropdown menu
 
-## Implementation Phases
+## Implementation Progress
 
-### Phase 1: Foundation (Completed)
+### Phase 1: Foundation ✅
 - [x] Set up project structure and basic macOS app
-- [x] Implement core data models
-- [x] Create basic menu bar integration
+- [x] Implement core data models (ClipboardItem, SanitizationRule)
+- [x] Create menu bar integration with status item
 - [x] Implement clipboard monitoring service
-- [x] Develop sanitization logic
+- [x] Develop sanitization logic with regex pattern matching
 
-### Phase 2: User Interface (Completed)
-- [x] Design and implement clipboard history view
-- [x] Create settings panel
+### Phase 2: User Interface ✅
+- [x] Design and implement clipboard history view with search
+- [x] Create settings panel with tab navigation
 - [x] Build rule management interface
-- [x] Implement rule testing functionality
+- [x] Implement sanitization rule editing
+- [x] Add UI for configuring app preferences
+- [x] Fix UI layout and positioning for popovers
 
-### Phase 3: Features Enhancement (In Progress)
-- [ ] Add keyboard shortcut support
-- [ ] Implement launch-at-login functionality
-- [ ] Create import/export functionality for rules
-- [ ] Add advanced image handling
+### Phase 3: Features Enhancement 🔄
+- [ ] Complete keyboard shortcut support
+  - [x] Core HotkeyManager implementation
+  - [ ] Connect hotkeys to app functions
+  - [ ] Implement hotkey customization UI
+- [ ] Launch-at-login functionality
+  - [ ] Implement service registration with macOS
+  - [ ] Add toggle in settings
+- [ ] Import/export functionality for rules
+  - [ ] Add export to JSON/plist
+  - [ ] Add import from file
+- [ ] Advanced image handling
+  - [x] Basic image display in history
+  - [ ] Image preview enhancements
+  - [ ] Potential OCR integration (future)
 
-### Phase 4: Testing & Optimization (Planned)
-- [ ] Perform performance testing with large clipboard histories
-- [ ] Optimize memory usage
+### Phase 4: Testing & Optimization ⏳
+- [ ] Performance testing with large clipboard histories
+- [ ] Memory usage optimization
 - [ ] Add automated tests
-- [ ] Conduct user testing
+  - [ ] Unit tests for services
+  - [ ] UI tests for main interactions
+- [ ] User testing and feedback collection
 
-### Phase 5: Release Preparation (Planned)
-- [ ] Prepare app for distribution
-- [ ] Create documentation
-- [ ] Design app icon and branding
-- [ ] Set up website or landing page
-
-## Testing Strategy
-
-1. **Unit Testing**: Test individual components (services, models)
-2. **Integration Testing**: Test interactions between components
-3. **Performance Testing**: Ensure app remains responsive with large clipboard histories
-4. **User Testing**: Gather feedback on usability and features
+### Phase 5: Release Preparation ⏳
+- [ ] App distribution preparation
+  - [ ] Code signing
+  - [ ] Notarization
+- [ ] App icon and branding design
+- [ ] Complete documentation
+  - [x] README
+  - [x] Project plan
+  - [ ] User guide
 
 ## Technical Considerations
 
 ### Privacy & Security
-- The app will not send clipboard data over the network
-- All processing happens locally on the user's device
-- Sanitized data is only stored in memory unless explicitly saved by the user
+- [x] No network access for clipboard data
+- [x] Local-only processing
+- [x] Secure storage of clipboard history
+- [ ] Potential automatic clearing of sensitive data after time period
 
 ### Performance
-- Optimize clipboard monitoring to minimize CPU usage
-- Implement efficient regex matching
-- Use lazy loading for clipboard history items
+- [x] Optimized clipboard monitoring
+- [x] Efficient regex matching implementation
+- [ ] Performance testing with large histories
+- [ ] Memory usage optimization
 
 ### Compatibility
-- Target macOS Ventura (13.0) and later
-- Ensure compatibility with Apple Silicon and Intel Macs
+- [x] Target macOS Ventura (13.0) and later
+- [ ] Verify compatibility with Apple Silicon and Intel Macs
 
 ## Next Steps
 
-1. **Implement Hotkey Support**: Allow users to trigger clipboard history via keyboard shortcuts
-2. **Add Launch-at-Login**: Enable automatic startup when the user logs in
-3. **Create Rule Import/Export**: Allow users to share sanitization rules
-4. **Develop Advanced Image Handling**: Add OCR for text in images, image resizing, etc.
+1. **Complete Hotkey Support**
+   - [ ] Implement proper hotkey registration
+   - [ ] Connect hotkeys to clipboard history popover
+   - [ ] Add hotkey for toggling monitoring
+
+2. **Add Launch-at-Login**
+   - [ ] Create helper app for login items
+   - [ ] Implement proper service management
+   - [ ] Add UI controls for enabling/disabling
+
+3. **Implement Rule Import/Export**
+   - [ ] Create JSON format for rule export
+   - [ ] Add import functionality with validation
+   - [ ] Allow sharing of rule collections
+
+4. **UI Polish and Refinement**
+   - [x] Fix popover positioning issues
+   - [x] Improve settings layout for better usability
+   - [ ] Add proper app icon
+   - [ ] Add visual polish and animations
 
 ## Milestones
 
-1. **Alpha Release** (Early Testing)
-   - Core functionality working
-   - Basic UI implemented
-   - Limited rule set
+1. **Alpha Release** (Current Stage)
+   - [x] Core functionality working
+   - [x] Basic UI implemented
+   - [x] Initial rule set defined
 
-2. **Beta Release** (Feature Complete)
-   - All planned features implemented
-   - UI polished
-   - Performance optimized
+2. **Beta Release** (Next Target)
+   - [ ] All planned features implemented
+   - [ ] UI polished
+   - [ ] Performance optimized
+   - [ ] Initial user testing completed
 
-3. **1.0 Release** (Public Launch)
-   - Bug fixes from beta testing
-   - Documentation complete
-   - Distribution ready
+3. **1.0 Release**
+   - [ ] Bug fixes from beta testing
+   - [ ] Documentation complete
+   - [ ] Distribution ready
+   - [ ] Marketing materials prepared
