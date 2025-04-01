@@ -2,6 +2,10 @@
 
 ClipWizard is a powerful clipboard manager for macOS that provides automatic clipboard monitoring, sanitization of sensitive information, and efficient access to your clipboard history.
 
+## Current Status
+
+ClipWizard is currently in beta. All core functionality is working, and we're focusing on implementing the remaining features and polishing the UI.
+
 ## Features
 
 ### Core Functionality
@@ -42,8 +46,8 @@ ClipWizard is a powerful clipboard manager for macOS that provides automatic cli
 - [x] Pattern testing functionality
 
 ### Phase 3: Advanced Features 🔄
-- [ ] Keyboard shortcut support
-- [ ] Launch-at-login functionality
+- [x] Keyboard shortcut support
+- [x] Launch-at-login functionality
 - [ ] Export/import of rules
 - [ ] Clipboard synchronization across devices
 - [ ] Advanced image handling
