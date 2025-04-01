@@ -2,6 +2,10 @@ import SwiftUI
 
 @main
 struct ClipWizardApp: App {
+    init() {
+        // Initialize the hotkey manager to ensure it's ready
+        _ = HotkeyManager.shared
+    }
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var body: some Scene {
@@ -17,6 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var contentView: ContentView?
     var sanitizationService: SanitizationService?
     var clipboardMonitor: ClipboardMonitor?
+    var hotkeyManager: HotkeyManager?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Initialize services
@@ -26,7 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         clipboardMonitor = ClipboardMonitor(sanitizationService: sanitizationService)
         
         // Create the content view
-        contentView = ContentView()
+        contentView = ContentView(sanitizationService: sanitizationService!, clipboardMonitor: clipboardMonitor!)
         
         // Create the status item in the menu bar
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -62,6 +67,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if maxItems > 0 {
             clipboardMonitor?.setMaxHistoryItems(maxItems)
         }
+        
+        // Initialize and load the hotkey manager
+        hotkeyManager = HotkeyManager.shared
+        setupHotkeyNotifications()
+        hotkeyManager?.loadHotkeys()
+        
+        // Initialize launch at login service
+        LaunchAtLoginService.shared.initialize()
     }
     
     @objc func showHistory() {
@@ -95,7 +108,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Ensure we have a content view
         if contentView == nil {
-            contentView = ContentView()
+            contentView = ContentView(sanitizationService: sanitizationService!, clipboardMonitor: clipboardMonitor!)
         }
         
         // Create a wrapper view to set the selected tab
@@ -146,5 +159,58 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func quit() {
         NSApp.terminate(nil)
+    }
+    
+    // Setup hotkey notification handlers
+    func setupHotkeyNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleShowClipboardHistory),
+            name: .showClipboardHistory,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleToggleClipboardMonitoring),
+            name: .toggleClipboardMonitoring,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleClearClipboardHistory),
+            name: .clearClipboardHistory,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleCopyLastClipboardItem),
+            name: .copyLastClipboardItem,
+            object: nil
+        )
+    }
+    
+    @objc func handleShowClipboardHistory() {
+        showPopoverWithView(index: 0)
+    }
+    
+    @objc func handleToggleClipboardMonitoring() {
+        if clipboardMonitor?.isMonitoring ?? false {
+            clipboardMonitor?.stopMonitoring()
+        } else {
+            clipboardMonitor?.startMonitoring()
+        }
+    }
+    
+    @objc func handleClearClipboardHistory() {
+        clipboardMonitor?.clearHistory()
+    }
+    
+    @objc func handleCopyLastClipboardItem() {
+        if let lastItem = clipboardMonitor?.getHistory().first {
+            clipboardMonitor?.copyToClipboard(lastItem)
+        }
     }
 }

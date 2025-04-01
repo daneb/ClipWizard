@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var sanitizationService: SanitizationService
     @ObservedObject var clipboardMonitor: ClipboardMonitor
+    @StateObject private var hotkeyManager = HotkeyManager.shared
     @State private var selectedTab: SettingsTab = .general
     @State private var maxHistoryItems: Int = 50
     @State private var monitoringEnabled: Bool = true
@@ -75,7 +76,7 @@ struct SettingsView: View {
                             isAddingNewRule: $isAddingNewRule
                         )
                     case .hotkeys:
-                        HotkeysSettingsView()
+                        HotkeysSettingsView(hotkeyManager: hotkeyManager)
                     case .about:
                         AboutView()
                     }
@@ -117,6 +118,7 @@ struct SettingsView: View {
 struct GeneralSettingsView: View {
     @Binding var maxHistoryItems: Int
     @Binding var monitoringEnabled: Bool
+    @State private var launchAtLoginEnabled: Bool = false
     var clipboardMonitor: ClipboardMonitor
     
     var body: some View {
@@ -168,14 +170,27 @@ struct GeneralSettingsView: View {
                 Text("Launch Options")
                     .font(.headline)
                 
-                Toggle("Launch at login", isOn: .constant(false))
+                Toggle("Launch at login", isOn: $launchAtLoginEnabled)
+                    .onChange(of: launchAtLoginEnabled) { oldValue, newValue in
+                        LaunchAtLoginService.shared.setEnabled(newValue)
+                    }
+                
                 Toggle("Show in menu bar", isOn: .constant(true))
+                    .disabled(true) // Always enabled for now
+                
+                Text("ClipWizard will always show in the menu bar.")
+                    .font(.caption)
+                    .foregroundColor(.gray)
             }
             
             Spacer()
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear {
+            // Initialize launch at login toggle from actual status
+            launchAtLoginEnabled = LaunchAtLoginService.shared.isEnabled()
+        }
     }
 }
 
@@ -306,43 +321,7 @@ struct RuleListRow: View {
     }
 }
 
-struct HotkeysSettingsView: View {
-    @State private var clipboardHistoryHotkeyString = "Command+Shift+V"
-    @State private var enableMonitoringHotkeyString = "Command+Shift+E"
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Keyboard Shortcuts")
-                .font(.headline)
-            
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text("Show Clipboard History")
-                    Spacer()
-                    TextField("Hotkey", text: $clipboardHistoryHotkeyString)
-                        .frame(width: 150)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
-                
-                HStack {
-                    Text("Enable/Disable Monitoring")
-                    Spacer()
-                    TextField("Hotkey", text: $enableMonitoringHotkeyString)
-                        .frame(width: 150)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
-            }
-            
-            Text("Note: Hotkey customization is currently under development.")
-                .font(.caption)
-                .foregroundColor(.gray)
-                
-            Spacer()
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
+// HotkeysSettingsView is now defined in HotkeysSettingsView.swift
 
 struct AboutView: View {
     var body: some View {

@@ -2,7 +2,7 @@ import Foundation
 import AppKit
 import Carbon
 
-class HotkeyManager {
+class HotkeyManager: ObservableObject {
     static let shared = HotkeyManager()
     
     // Event handler id
@@ -10,6 +10,9 @@ class HotkeyManager {
     
     // Registered hotkeys
     private var registeredHotkeys: [String: (UInt32, UInt32)] = [:]
+    
+    // Store hotkey combos for persistence
+    private var hotkeyStrings: [String: (key: String, modifiers: String)] = [:]
     
     // Hotkey actions
     private var hotkeyActions: [String: () -> Void] = [:]
@@ -150,6 +153,76 @@ class HotkeyManager {
     func unregisterAllHotkeys() {
         for id in registeredHotkeys.keys {
             unregisterHotkey(id: id)
+        }
+    }
+    
+    // Load hotkeys from UserDefaults
+    func loadHotkeys() {
+        if let savedHotkeys = UserDefaults.standard.dictionary(forKey: "savedHotkeys") as? [String: [String: String]] {
+            for (id, combo) in savedHotkeys {
+                if let key = combo["key"], let modifiersStr = combo["modifiers"],
+                   let keyCode = HotkeyManager.keyCodeForCharacter(key) {
+                    let modifiers = HotkeyManager.carbonModifierFlagsFromString(modifiersStr)
+                    hotkeyStrings[id] = (key, modifiersStr)
+                    
+                    // Re-register the hotkey with action lookup
+                    _ = registerHotkey(id: id, keyCode: keyCode, modifiers: modifiers, action: getActionForHotkey(id))
+                }
+            }
+        }
+    }
+    
+    // Save hotkeys to UserDefaults
+    func saveHotkeys() {
+        var hotkeyDict: [String: [String: String]] = [:]
+        
+        for (id, combo) in hotkeyStrings {
+            hotkeyDict[id] = ["key": combo.key, "modifiers": combo.modifiers]
+        }
+        
+        UserDefaults.standard.set(hotkeyDict, forKey: "savedHotkeys")
+    }
+    
+    // Get the human-readable combo for a hotkey
+    func getHotkeyCombo(for id: String) -> (key: String, modifiers: String)? {
+        return hotkeyStrings[id]
+    }
+    
+    // Register with string representation
+    func registerHotkeyWithStrings(
+        id: String,
+        key: String,
+        modifiers: String,
+        action: @escaping () -> Void
+    ) -> Bool {
+        guard let keyCode = HotkeyManager.keyCodeForCharacter(key) else {
+            return false
+        }
+        
+        let modifierFlags = HotkeyManager.carbonModifierFlagsFromString(modifiers)
+        let result = registerHotkey(id: id, keyCode: keyCode, modifiers: modifierFlags, action: action)
+        
+        if result {
+            hotkeyStrings[id] = (key, modifiers)
+            saveHotkeys()
+        }
+        
+        return result
+    }
+    
+    // Get the appropriate action for each hotkey
+    private func getActionForHotkey(_ key: String) -> () -> Void {
+        switch key {
+        case "showClipboardHistory":
+            return { NotificationCenter.default.post(name: .showClipboardHistory, object: nil) }
+        case "toggleMonitoring":
+            return { NotificationCenter.default.post(name: .toggleClipboardMonitoring, object: nil) }
+        case "clearHistory":
+            return { NotificationCenter.default.post(name: .clearClipboardHistory, object: nil) }
+        case "copyLastItem":
+            return { NotificationCenter.default.post(name: .copyLastClipboardItem, object: nil) }
+        default:
+            return {}
         }
     }
 }

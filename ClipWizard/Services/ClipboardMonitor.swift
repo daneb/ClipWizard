@@ -4,6 +4,7 @@ import Combine
 
 class ClipboardMonitor: ObservableObject {
     @Published var clipboardHistory: [ClipboardItem] = []
+    @Published private(set) var isMonitoring: Bool = false
     private var maxHistoryItems = 50
     private var cancellables = Set<AnyCancellable>()
     private var timer: Timer?
@@ -20,15 +21,21 @@ class ClipboardMonitor: ObservableObject {
     }
     
     func startMonitoring() {
+        // Don't start if already monitoring
+        guard !isMonitoring else { return }
+        
         // Check the clipboard every 0.5 seconds
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.checkClipboard()
         }
+        
+        isMonitoring = true
     }
     
     func stopMonitoring() {
         timer?.invalidate()
         timer = nil
+        isMonitoring = false
     }
     
     private func checkClipboard() {
@@ -43,6 +50,7 @@ class ClipboardMonitor: ObservableObject {
         // Process text content
         if let clipboardString = pasteboard.string(forType: .string) {
             let newItem = ClipboardItem(text: clipboardString)
+            newItem.typeErasedClipboardMonitor = self
             
             // Apply sanitization if the service is available
             if let sanitizationService = sanitizationService {
@@ -53,7 +61,9 @@ class ClipboardMonitor: ObservableObject {
         }
         // Process image content
         else if let clipboardImage = pasteboard.data(forType: .tiff).flatMap({ NSImage(data: $0) }) {
-            addItemToHistory(ClipboardItem(image: clipboardImage))
+            let newItem = ClipboardItem(image: clipboardImage)
+            newItem.typeErasedClipboardMonitor = self
+            addItemToHistory(newItem)
         }
     }
     
@@ -110,5 +120,9 @@ class ClipboardMonitor: ObservableObject {
         if clipboardHistory.count > maxHistoryItems {
             clipboardHistory = Array(clipboardHistory.prefix(maxHistoryItems))
         }
+    }
+    
+    func getHistory() -> [ClipboardItem] {
+        return clipboardHistory
     }
 }

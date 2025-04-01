@@ -39,81 +39,59 @@ struct ClipboardHistoryView: View {
                     .buttonStyle(BorderlessButtonStyle())
                 }
             }
-            .padding()
-            .background(Color(.textBackgroundColor))
+            .padding(8)
+            .background(Color(.systemGray))
+            .cornerRadius(8)
+            .padding(.horizontal)
+            .padding(.vertical, 8)
             
             Divider()
             
-            // History list
             if filteredHistory.isEmpty {
                 VStack {
                     Spacer()
-                    Text("No clipboard history")
-                        .foregroundColor(.gray)
+                    if searchText.isEmpty {
+                        Text("No clipboard history")
+                            .foregroundColor(.gray)
+                    } else {
+                        Text("No items match your search")
+                            .foregroundColor(.gray)
+                    }
                     Spacer()
                 }
             } else {
                 List {
                     ForEach(filteredHistory) { item in
                         ClipboardItemRow(item: item)
+                            .contentShape(Rectangle())
                             .onTapGesture {
-                                clipboardMonitor.copyToClipboard(item)
+                                selectedItem = item
+                                showingDetailView = true
                             }
                             .contextMenu {
                                 Button(action: {
                                     clipboardMonitor.copyToClipboard(item)
                                 }) {
-                                    Text("Copy to Clipboard")
-                                    Image(systemName: "doc.on.doc")
+                                    Label("Copy", systemImage: "doc.on.doc")
                                 }
                                 
-                                Button(action: {
-                                    selectedItem = item
-                                    showingDetailView = true
-                                }) {
-                                    Text("View Details")
-                                    Image(systemName: "info.circle")
-                                }
-                                
-                                Divider()
-                                
-                                Button(action: {
-                                    if let index = clipboardMonitor.clipboardHistory.firstIndex(of: item) {
+                                Button(role: .destructive, action: {
+                                    if let index = clipboardMonitor.clipboardHistory.firstIndex(where: { $0.id == item.id }) {
                                         clipboardMonitor.clipboardHistory.remove(at: index)
                                     }
                                 }) {
-                                    Text("Delete")
-                                    Image(systemName: "trash")
+                                    Label("Delete", systemImage: "trash")
                                 }
                             }
                     }
                 }
                 .listStyle(PlainListStyle())
             }
-            
-            Divider()
-            
-            // Bottom toolbar
-            HStack {
-                Button(action: {
-                    clipboardMonitor.clearHistory()
-                }) {
-                    Text("Clear All")
-                }
-                .buttonStyle(BorderlessButtonStyle())
-                
-                Spacer()
-                
-                Text("\(filteredHistory.count) items")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
-            .padding()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .sheet(isPresented: $showingDetailView) {
             if let item = selectedItem {
                 ClipboardItemDetailView(item: item)
+                    .frame(width: 400, height: 300)
             }
         }
     }
@@ -123,62 +101,54 @@ struct ClipboardItemRow: View {
     let item: ClipboardItem
     
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            // Icon based on type
-            if item.type == .image {
-                Image(systemName: "photo")
-                    .frame(width: 20, height: 20)
-            } else {
-                Image(systemName: "doc.text")
-                    .frame(width: 20, height: 20)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                // Content preview
-                if item.type == .text {
-                    Text(item.sanitizedText ?? item.originalText ?? "")
-                        .lineLimit(2)
-                        .font(.body)
-                } else if item.type == .image, let image = item.originalImage {
-                    Image(nsImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxHeight: 60)
-                }
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                // Icon based on content type
+                Image(systemName: item.type == .text ? "doc.text" : "photo")
+                    .foregroundColor(.blue)
                 
                 // Timestamp
-                Text(timeAgoString(for: item.timestamp))
+                Text(formattedDate(item.timestamp))
                     .font(.caption)
                     .foregroundColor(.gray)
                 
-                // Sanitized indicator
-                if item.isSanitized {
-                    Text("Sanitized")
+                Spacer()
+                
+                // Sanitized indicator if applicable
+                if item.type == .text && item.originalText != item.sanitizedText {
+                    Image(systemName: "shield.fill")
+                        .foregroundColor(.green)
                         .font(.caption)
-                        .foregroundColor(.blue)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.1))
-                        .cornerRadius(4)
                 }
+            }
+            
+            // Content preview
+            if item.type == .text {
+                Text(item.sanitizedText ?? item.originalText ?? "")
+                    .lineLimit(2)
+                    .font(.callout)
+            } else if item.type == .image, let image = item.originalImage {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxHeight: 100)
             }
         }
         .padding(.vertical, 4)
     }
     
-    private func timeAgoString(for date: Date) -> String {
-        let calendar = Calendar.current
-        let now = Date()
-        let components = calendar.dateComponents([.minute, .hour, .day], from: date, to: now)
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
         
-        if let day = components.day, day > 0 {
-            return day == 1 ? "Yesterday" : "\(day) days ago"
-        } else if let hour = components.hour, hour > 0 {
-            return hour == 1 ? "1 hour ago" : "\(hour) hours ago"
-        } else if let minute = components.minute, minute > 0 {
-            return minute == 1 ? "1 minute ago" : "\(minute) minutes ago"
+        if Calendar.current.isDateInToday(date) {
+            formatter.dateFormat = "h:mm a"
+            return "Today, \(formatter.string(from: date))"
+        } else if Calendar.current.isDateInYesterday(date) {
+            formatter.dateFormat = "h:mm a"
+            return "Yesterday, \(formatter.string(from: date))"
         } else {
-            return "Just now"
+            formatter.dateFormat = "MMM d, h:mm a"
+            return formatter.string(from: date)
         }
     }
 }
@@ -187,123 +157,106 @@ struct ClipboardItemDetailView: View {
     let item: ClipboardItem
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // Header
+        VStack(spacing: 16) {
+            // Header with timestamp and type
             HStack {
-                Text("Clipboard Item Details")
+                Image(systemName: item.type == .text ? "doc.text" : "photo")
+                    .foregroundColor(.blue)
+                
+                Text(formattedDate(item.timestamp))
                     .font(.headline)
                 
                 Spacer()
                 
-                Button(action: {
-                    NSApp.sendAction(#selector(NSPopover.close), to: nil, from: nil)
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
+                if item.type == .text && item.originalText != item.sanitizedText {
+                    Label("Sanitized", systemImage: "shield.fill")
+                        .foregroundColor(.green)
                 }
-                .buttonStyle(BorderlessButtonStyle())
             }
-            .padding()
+            .padding(.horizontal)
+            
+            Divider()
             
             // Content
             ScrollView {
-                VStack(alignment: .leading, spacing: 15) {
-                    // Type and timestamp
-                    GroupBox(label: Text("Information").bold()) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("Type:")
-                                    .bold()
-                                Text(item.type == .text ? "Text" : "Image")
-                            }
-                            
-                            HStack {
-                                Text("Copied at:")
-                                    .bold()
-                                Text(formattedDate(item.timestamp))
-                            }
-                            
-                            if item.type == .text && item.isSanitized {
-                                HStack {
-                                    Text("Status:")
-                                        .bold()
-                                    Text("Sanitized")
-                                        .foregroundColor(.blue)
-                                }
-                            }
-                        }
-                        .padding(.vertical, 5)
-                    }
-                    .padding(.horizontal)
-                    
-                    // Original content
+                VStack(alignment: .leading, spacing: 12) {
                     if item.type == .text {
-                        GroupBox(label: Text("Original Text").bold()) {
-                            Text(item.originalText ?? "")
-                                .padding(.vertical, 5)
-                                .textSelection(.enabled)
-                        }
-                        .padding(.horizontal)
-                        
-                        // Sanitized content (if different)
-                        if item.isSanitized {
-                            GroupBox(label: Text("Sanitized Text").bold()) {
+                        if item.originalText != item.sanitizedText {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Sanitized Content:")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal)
+                                
                                 Text(item.sanitizedText ?? "")
-                                    .padding(.vertical, 5)
                                     .textSelection(.enabled)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color(.systemGray))
+                                    .cornerRadius(8)
+                                    .padding(.horizontal)
+                                
+                                Text("Original Content:")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal)
+                                
+                                Text(item.originalText ?? "")
+                                    .textSelection(.enabled)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color(.systemGray))
+                                    .cornerRadius(8)
+                                    .padding(.horizontal)
                             }
-                            .padding(.horizontal)
+                        } else {
+                            Text(item.originalText ?? "")
+                                .textSelection(.enabled)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color(.systemGray))
+                                .cornerRadius(8)
+                                .padding(.horizontal)
                         }
                     } else if item.type == .image, let image = item.originalImage {
-                        GroupBox(label: Text("Image").bold()) {
+                        VStack(alignment: .center) {
                             Image(nsImage: image)
                                 .resizable()
                                 .scaledToFit()
-                                .padding(.vertical, 5)
+                                .frame(maxHeight: 200)
+                                .cornerRadius(4)
+                                .padding(.horizontal)
                         }
-                        .padding(.horizontal)
+                        .frame(maxWidth: .infinity)
                     }
-                    
-                    Spacer()
                 }
-                .padding(.bottom)
             }
             
-            // Action buttons
+            Divider()
+            
+            // Actions
             HStack {
                 Button(action: {
-                    if let pasteboard = NSPasteboard.general.string(forType: .string) {
-                        NSLog("Copy to clipboard: \(pasteboard)")
+                    // Copy to clipboard
+                    if let monitor = item.typeErasedClipboardMonitor as? ClipboardMonitor {
+                        monitor.copyToClipboard(item)
                     }
                 }) {
-                    Text("Copy to Clipboard")
-                        .frame(maxWidth: .infinity)
+                    Label("Copy to Clipboard", systemImage: "doc.on.doc")
                 }
                 .buttonStyle(.borderedProminent)
                 
-                if item.type == .text && item.isSanitized {
-                    Button(action: {
-                        if let original = item.originalText {
-                            let pasteboard = NSPasteboard.general
-                            pasteboard.clearContents()
-                            pasteboard.setString(original, forType: .string)
-                        }
-                    }) {
-                        Text("Copy Original")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                }
+                Spacer()
             }
-            .padding()
+            .padding(.horizontal)
         }
-        .frame(width: 450, height: 500)
+        .padding(.vertical)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .medium
+        formatter.dateFormat = "MMM d, yyyy 'at' h:mm a"
         return formatter.string(from: date)
     }
 }

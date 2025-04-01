@@ -16,6 +16,9 @@ class ClipboardItem: Identifiable, ObservableObject {
     @Published var sanitizedText: String?
     @Published var originalImage: NSImage?
     
+    // A reference to the clipboard monitor (type-erased to avoid circular dependencies)
+    var typeErasedClipboardMonitor: AnyObject?
+    
     var isSanitized: Bool {
         return originalText != sanitizedText && originalText != nil && sanitizedText != nil
     }

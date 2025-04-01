@@ -1,21 +1,13 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var sanitizationService = SanitizationService()
-    @StateObject private var clipboardMonitor: ClipboardMonitor
+    @ObservedObject var sanitizationService: SanitizationService
+    @ObservedObject var clipboardMonitor: ClipboardMonitor
     @State private var selectedTab: Int = 0
     
-    init() {
-        // Create the sanitization service first
-        let service = SanitizationService()
-        service.loadRules()
-        
-        // Load the clipboard monitor with the sanitization service
-        let monitor = ClipboardMonitor(sanitizationService: service)
-        
-        // Initialize the state objects
-        _sanitizationService = StateObject(wrappedValue: service)
-        _clipboardMonitor = StateObject(wrappedValue: monitor)
+    init(sanitizationService: SanitizationService, clipboardMonitor: ClipboardMonitor) {
+        self.sanitizationService = sanitizationService
+        self.clipboardMonitor = clipboardMonitor
     }
     
     var body: some View {
@@ -69,5 +61,8 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(
+        sanitizationService: SanitizationService(),
+        clipboardMonitor: ClipboardMonitor()
+    )
 }
