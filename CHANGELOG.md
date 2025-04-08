@@ -7,6 +7,9 @@
 - Simplified application startup
 - Improved Rules UI with larger display area and better pattern visibility
 - Increased popover size for better usability
+- Fixed Logs View UI layout issues and improved readability
+- Enhanced log content display with text selection support
+- Added functional log level filtering in Logs View
 
 ## Version 0.2.2
 
