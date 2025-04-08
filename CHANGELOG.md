@@ -1,6 +1,22 @@
 # ClipWizard Changelog
 
-## Version 0.2.3 (Current Beta)
+## Version 0.2.5 (Current Beta)
+
+### Fixes
+- Fixed memory management issue with About window that caused crashes
+- Improved window delegation and resource cleanup
+- Added proper memory deallocation for modal windows
+- Fixed "View Logs" menu item to correctly navigate to the Logs tab
+- Added notification system for cross-view communication
+
+## Version 0.2.4
+
+### Changes
+- Moved About dialog to a standalone window similar to standard macOS apps
+- Removed About tab from settings tabs for cleaner interface 
+- Enhanced standalone About window with app icon and streamlined layout
+
+## Version 0.2.3
 
 ### Changes
 - Removed "Launch at Login" functionality due to persistent permission issues
@@ -10,6 +26,11 @@
 - Fixed Logs View UI layout issues and improved readability
 - Enhanced log content display with text selection support
 - Added functional log level filtering in Logs View
+- Fixed About dialog to properly display in the app UI
+- Enhanced About view with features list and version information
+- Fixed status bar icon click functionality
+- Added comprehensive error handling and logging for better diagnostics
+- Improved application initialization and window positioning
 
 ## Version 0.2.2
 
