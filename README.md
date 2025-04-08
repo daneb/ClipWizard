@@ -48,7 +48,10 @@ ClipWizard is currently in beta. All core functionality is working, and we're fo
 ### Phase 3: Advanced Features 🔄
 - [x] Keyboard shortcut support
 - [x] Launch-at-login functionality
+  - [x] Fixed AppleScript permission issues
+  - [x] Added user-friendly permission request dialogs
 - [x] Export/import of rules
+- [x] Enhanced error handling and user feedback
 - [ ] Clipboard synchronization across devices
 - [ ] Advanced image handling
 

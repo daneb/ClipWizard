@@ -14,6 +14,7 @@ struct SettingsView: View {
         case general
         case rules
         case hotkeys
+        case logs
         case about
     }
     
@@ -43,6 +44,14 @@ struct SettingsView: View {
                     icon: "keyboard", 
                     isSelected: selectedTab == .hotkeys,
                     action: { selectedTab = .hotkeys }
+                )
+                
+                // Logs tab
+                settingTabButton(
+                    title: "Logs", 
+                    icon: "doc.text", 
+                    isSelected: selectedTab == .logs,
+                    action: { selectedTab = .logs }
                 )
                 
                 // About tab
@@ -77,6 +86,8 @@ struct SettingsView: View {
                         )
                     case .hotkeys:
                         HotkeysSettingsView(hotkeyManager: hotkeyManager)
+                    case .logs:
+                        LogsView()
                     case .about:
                         AboutView()
                     }

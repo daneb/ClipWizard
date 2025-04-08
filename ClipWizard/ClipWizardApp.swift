@@ -1,4 +1,6 @@
 import SwiftUI
+// Import our custom services
+import Foundation
 
 @main
 struct ClipWizardApp: App {
@@ -24,8 +26,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var hotkeyManager: HotkeyManager?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Request permissions that might be needed
-        requestAppleScriptPermissions()
+        // Initialize the logging service
+        logInfo("ClipWizard application starting up")
         
         // Initialize services
         sanitizationService = SanitizationService()
@@ -57,6 +59,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Settings", action: #selector(showSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "About ClipWizard", action: #selector(about), keyEquivalent: "a"))
+        menu.addItem(NSMenuItem(title: "View Logs", action: #selector(showLogs), keyEquivalent: "l"))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
         
@@ -236,45 +239,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    // Proactively request AppleScript permissions
-    func requestAppleScriptPermissions() {
-        print("Proactively requesting Apple Events permissions...")
+    // Show application logs
+    @objc func showLogs() {
+        logInfo("User requested to view application logs")
         
-        let source = """
-        tell application "System Events"
-            return name of current user
-        end tell
-        """
-        
-        var error: NSDictionary?
-        if let script = NSAppleScript(source: source) {
-            let result = script.executeAndReturnError(&error)
-            if let error = error {
-                print("AppleScript permission error: \(error)")
-                
-                // Only show the permission prompt if this is the first launch
-                if !UserDefaults.standard.bool(forKey: "hasRequestedAppleEventsPermission") {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        let alert = NSAlert()
-                        alert.messageText = "ClipWizard Needs Permissions"
-                        alert.informativeText = "For the 'Launch at Login' feature to work, ClipWizard needs permission to control System Events. Would you like to grant this permission now?"
-                        alert.addButton(withTitle: "Open System Preferences")
-                        alert.addButton(withTitle: "Later")
-                        
-                        if alert.runModal() == .alertFirstButtonReturn {
-                            if let prefsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation") {
-                                NSWorkspace.shared.open(prefsURL)
-                            } else {
-                                NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Library/PreferencePanes/Security.prefPane"))
-                            }
-                        }
-                    }
-                    
-                    UserDefaults.standard.set(true, forKey: "hasRequestedAppleEventsPermission")
-                }
-            } else {
-                print("AppleScript permissions granted successfully: \(result.stringValue ?? "no result")")
-            }
+        if let logPath = LoggingService.shared.getLogFilePath() {
+            // Try to open the log file in Console.app or a text editor
+            NSWorkspace.shared.open(URL(fileURLWithPath: logPath))
+        } else {
+            // Show an error if we couldn't get the log path
+            let alert = NSAlert()
+            alert.messageText = "Cannot Access Logs"
+            alert.informativeText = "Unable to access the application logs. Please check application permissions."
+            alert.runModal()
         }
     }
 }

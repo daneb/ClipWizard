@@ -12,6 +12,10 @@ Currently, the project has completed Phases 1 and 2, and has made significant pr
 - ✅ Keyboard shortcut support
 - ✅ Launch-at-login functionality
 - ✅ UI improvements for layout and usability
+- ✅ Fixed AppleScript permission issues
+- ✅ Enhanced error handling for system integrations
+- ✅ Fixed Settings tab navigation issues
+- ✅ Added comprehensive logging system for diagnostics and troubleshooting
 
 The app is functional and can be used for its primary purposes of clipboard monitoring and sanitization.
 
@@ -96,6 +100,8 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 - [x] Launch-at-login functionality
   - [x] Implement service registration with macOS
   - [x] Add toggle in settings
+  - [x] Fix AppleScript permission issues
+  - [x] Add user-friendly permission request dialogs
 - [x] Import/export functionality for rules
   - [x] Add export to JSON format
   - [x] Add import from file
@@ -129,6 +135,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 - [x] No network access for clipboard data
 - [x] Local-only processing
 - [x] Secure storage of clipboard history
+- [x] Comprehensive logging system for diagnostics (no sensitive data logged)
 - [ ] Potential automatic clearing of sensitive data after time period
 
 ### Performance
@@ -147,6 +154,8 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
    - [x] Fix popover positioning issues
    - [x] Improve settings layout for better usability
    - [x] Enhance hotkeys UI for better layout and readability
+   - [x] Add proper error handling and user feedback
+   - [x] Fixed tab navigation issues between History and Settings views
    - [ ] Add proper app icon
    - [ ] Add visual polish and animations
    - [ ] Improve dark mode support and consistency
