@@ -24,14 +24,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var hotkeyManager: HotkeyManager?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Request permissions that might be needed
+        requestAppleScriptPermissions()
+        
         // Initialize services
         sanitizationService = SanitizationService()
         sanitizationService?.loadRules()
         
         clipboardMonitor = ClipboardMonitor(sanitizationService: sanitizationService)
         
-        // Create the content view
-        contentView = ContentView(sanitizationService: sanitizationService!, clipboardMonitor: clipboardMonitor!)
+        // Create the content view with default tab (History)
+        contentView = ContentView(sanitizationService: sanitizationService!, clipboardMonitor: clipboardMonitor!, initialTab: 0)
         
         // Create the popover
         let popover = NSPopover()
@@ -124,21 +127,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self.popover = popover
         }
         
-        // Ensure we have a content view
-        if contentView == nil {
-            contentView = ContentView(sanitizationService: sanitizationService!, clipboardMonitor: clipboardMonitor!)
-        }
+        // Create a fresh ContentView with the correct tab selected using the initializer
+        self.contentView = ContentView(
+            sanitizationService: sanitizationService!, 
+            clipboardMonitor: clipboardMonitor!,
+            initialTab: index
+        )
         
-        // Update the selected tab
-        if let contentView = self.contentView {
-            let selectedTabKeyPath = \ContentView.selectedTab
-            if contentView.selectedTab != index {
-                contentView.selectedTab = index
-            }
-        }
-        
-        // Create a hosting controller with the content view
-        let hostingController = NSHostingController(rootView: contentView!)
+        // Create a hosting controller with the new content view
+        let hostingController = NSHostingController(rootView: self.contentView!)
         popover?.contentViewController = hostingController
         
         // Show the popover
@@ -236,6 +233,48 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func handleCopyLastClipboardItem() {
         if let lastItem = clipboardMonitor?.getHistory().first {
             clipboardMonitor?.copyToClipboard(lastItem)
+        }
+    }
+    
+    // Proactively request AppleScript permissions
+    func requestAppleScriptPermissions() {
+        print("Proactively requesting Apple Events permissions...")
+        
+        let source = """
+        tell application "System Events"
+            return name of current user
+        end tell
+        """
+        
+        var error: NSDictionary?
+        if let script = NSAppleScript(source: source) {
+            let result = script.executeAndReturnError(&error)
+            if let error = error {
+                print("AppleScript permission error: \(error)")
+                
+                // Only show the permission prompt if this is the first launch
+                if !UserDefaults.standard.bool(forKey: "hasRequestedAppleEventsPermission") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        let alert = NSAlert()
+                        alert.messageText = "ClipWizard Needs Permissions"
+                        alert.informativeText = "For the 'Launch at Login' feature to work, ClipWizard needs permission to control System Events. Would you like to grant this permission now?"
+                        alert.addButton(withTitle: "Open System Preferences")
+                        alert.addButton(withTitle: "Later")
+                        
+                        if alert.runModal() == .alertFirstButtonReturn {
+                            if let prefsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation") {
+                                NSWorkspace.shared.open(prefsURL)
+                            } else {
+                                NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Library/PreferencePanes/Security.prefPane"))
+                            }
+                        }
+                    }
+                    
+                    UserDefaults.standard.set(true, forKey: "hasRequestedAppleEventsPermission")
+                }
+            } else {
+                print("AppleScript permissions granted successfully: \(result.stringValue ?? "no result")")
+            }
         }
     }
 }

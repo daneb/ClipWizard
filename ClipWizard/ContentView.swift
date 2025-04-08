@@ -3,11 +3,12 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var sanitizationService: SanitizationService
     @ObservedObject var clipboardMonitor: ClipboardMonitor
-    @State var selectedTab: Int = 0
+    @State var selectedTab: Int = 0 // This can be set from outside the struct
     
-    init(sanitizationService: SanitizationService, clipboardMonitor: ClipboardMonitor) {
+    init(sanitizationService: SanitizationService, clipboardMonitor: ClipboardMonitor, initialTab: Int = 0) {
         self.sanitizationService = sanitizationService
         self.clipboardMonitor = clipboardMonitor
+        self._selectedTab = State(initialValue: initialTab)
     }
     
     var body: some View {
@@ -63,6 +64,7 @@ struct ContentView: View {
 #Preview {
     ContentView(
         sanitizationService: SanitizationService(),
-        clipboardMonitor: ClipboardMonitor()
+        clipboardMonitor: ClipboardMonitor(),
+        initialTab: 0
     )
 }
