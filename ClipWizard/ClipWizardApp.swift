@@ -25,6 +25,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var clipboardMonitor: ClipboardMonitor?
     var hotkeyManager: HotkeyManager?
     
+    // Property to hold a reference to the about window controller
+    private var aboutWindowController: NSWindowController?
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Initialize the logging service
         logInfo("ClipWizard application starting up")
@@ -51,6 +54,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusButton.image = NSImage(systemSymbolName: "clipboard", accessibilityDescription: "ClipWizard")
             statusButton.action = #selector(togglePopover)
             statusButton.target = self
+            statusButton.sendAction(on: .leftMouseUp) // Ensure action is sent only on left mouse click
+            
+            // Add tooltip to make it clear what the icon does
+            statusButton.toolTip = "ClipWizard - Click to show clipboard history"
+            
+            // Log that we've set up the status item correctly
+            logInfo("Status bar item created and configured")
         }
         
         // Set up the menu
@@ -104,15 +114,53 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func about() {
-        NSApp.orderFrontStandardAboutPanel()
+        // If the about window is already open, just bring it to front
+        if let windowController = aboutWindowController, windowController.window?.isVisible == true {
+            windowController.window?.makeKeyAndOrderFront(nil)
+            return
+        }
+        
+        // Create a dedicated About window instead of using the tab system
+        let aboutWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 300, height: 180),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        aboutWindow.center()
+        aboutWindow.title = "About ClipWizard"
+        
+        // Important: Set window to be released when closed
+        aboutWindow.isReleasedWhenClosed = false
+        
+        // Set the window's content view to our SwiftUI AboutWindow view
+        let aboutView = AboutWindow()
+        let hostingController = NSHostingController(rootView: aboutView)
+        aboutWindow.contentViewController = hostingController
+        
+        // Create a window controller and store it
+        let windowController = NSWindowController(window: aboutWindow)
+        self.aboutWindowController = windowController
+        
+        // Set a close delegate to clean up references
+        aboutWindow.delegate = self
+        
+        // Show the window
+        windowController.showWindow(nil)
+        
+        // Log the action
+        logInfo("About window displayed")
     }
     
     @objc func togglePopover() {
         if let popover = popover, popover.isShown {
             popover.close()
         } else {
-            showPopoverWithView(index: 0)
+            showPopoverWithView(index: 0) // Show clipboard history when clicking the icon
         }
+        
+        // Log the action for diagnostics
+        logInfo("Menu bar icon clicked, toggling popover")
     }
     
     private func closeMenu() {
@@ -121,24 +169,53 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func showPopoverWithView(index: Int) {
+        // Log which view we're trying to show
+        logInfo("Attempting to show popover with view index: \(index)")
+        
         // Create the popover if it doesn't exist
         if popover == nil {
             let popover = NSPopover()
             popover.behavior = .transient
             popover.contentSize = NSSize(width: 450, height: 500) // Set fixed size for the popover
             self.popover = popover
+            logInfo("Created new popover instance")
         }
         
         // Create a fresh ContentView with the correct tab selected using the initializer
-        self.contentView = ContentView(
-            sanitizationService: sanitizationService!, 
-            clipboardMonitor: clipboardMonitor!,
-            initialTab: index
-        )
-        
-        // Create a hosting controller with the new content view
-        let hostingController = NSHostingController(rootView: self.contentView!)
-        popover?.contentViewController = hostingController
+        do {
+            // Ensure our services are initialized
+            if sanitizationService == nil {
+                sanitizationService = SanitizationService()
+                sanitizationService?.loadRules()
+                logInfo("Initialized sanitization service")
+            }
+            
+            if clipboardMonitor == nil {
+                clipboardMonitor = ClipboardMonitor(sanitizationService: sanitizationService)
+                logInfo("Initialized clipboard monitor")
+            }
+            
+            guard let sanitizationService = sanitizationService, let clipboardMonitor = clipboardMonitor else {
+                logError("Failed to initialize required services")
+                return
+            }
+            
+            self.contentView = ContentView(
+                sanitizationService: sanitizationService, 
+                clipboardMonitor: clipboardMonitor,
+                initialTab: index
+            )
+            
+            // Create a hosting controller with the new content view
+            if let contentView = self.contentView {
+                let hostingController = NSHostingController(rootView: contentView)
+                popover?.contentViewController = hostingController
+                logInfo("Created hosting controller with content view")
+            } else {
+                logError("Failed to create content view")
+                return
+            }
+        }
         
         // Show the popover
         if let popover = popover, let button = statusItem?.button {
@@ -151,33 +228,39 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             
             if popover.isShown {
                 popover.close()
-            } else {
-                // Show the popover
-                popover.show(relativeTo: button.bounds, of: button, preferredEdge: .maxY)
+                logInfo("Closed existing popover")
+            }
+            
+            // Show the popover
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .maxY)
+            logInfo("Showed popover")
+            
+            // Position the popover properly
+            if let popoverWindow = popover.contentViewController?.view.window {
+                let screenFrame = NSScreen.main?.visibleFrame ?? .zero
+                var newFrame = popoverWindow.frame
                 
-                // Position the popover properly
-                if let popoverWindow = popover.contentViewController?.view.window {
-                    let screenFrame = NSScreen.main?.visibleFrame ?? .zero
-                    var newFrame = popoverWindow.frame
-                    
-                    // Ensure window is not positioned too high
-                    if newFrame.origin.y + newFrame.height > screenFrame.height {
-                        newFrame.origin.y = screenFrame.height - newFrame.height - 10
-                    }
-                    
-                    // Ensure window is not positioned too low
-                    if newFrame.origin.y < screenFrame.origin.y {
-                        newFrame.origin.y = screenFrame.origin.y + 10
-                    }
-                    
-                    popoverWindow.setFrame(newFrame, display: true)
+                // Ensure window is not positioned too high
+                if newFrame.origin.y + newFrame.height > screenFrame.height {
+                    newFrame.origin.y = screenFrame.height - newFrame.height - 10
                 }
+                
+                // Ensure window is not positioned too low
+                if newFrame.origin.y < screenFrame.origin.y {
+                    newFrame.origin.y = screenFrame.origin.y + 10
+                }
+                
+                popoverWindow.setFrame(newFrame, display: true)
+                logInfo("Adjusted popover position")
             }
             
             // Restore the menu after a short delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
                 self?.statusItem?.menu = savedMenu
+                logInfo("Restored status item menu")
             }
+        } else {
+            logError("Could not show popover - missing popover or status button")
         }
     }
     
@@ -242,15 +325,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func showLogs() {
         logInfo("User requested to view application logs")
         
-        if let logPath = LoggingService.shared.getLogFilePath() {
-            // Try to open the log file in Console.app or a text editor
-            NSWorkspace.shared.open(URL(fileURLWithPath: logPath))
-        } else {
-            // Show an error if we couldn't get the log path
-            let alert = NSAlert()
-            alert.messageText = "Cannot Access Logs"
-            alert.informativeText = "Unable to access the application logs. Please check application permissions."
-            alert.runModal()
+        // First we need to create or update the content view to show Settings (tab index 1)
+        closeMenu()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            guard let self = self else { return }
+            
+            // First, create the view with the Settings tab selected
+            self.showPopoverWithView(index: 1)
+            
+            // Now, we need to access the SettingsView and set its tab to Logs
+            // We'll use a notification for this since we can't directly access the SettingsView
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                NotificationCenter.default.post(name: .showLogsTab, object: nil)
+                logInfo("Posted notification to switch to Logs tab")
+            }
+        }
+    }
+}
+
+// MARK: - NSWindowDelegate methods
+extension AppDelegate: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        // Check if this is our about window
+        if let closingWindow = notification.object as? NSWindow,
+           let aboutWindow = aboutWindowController?.window,
+           closingWindow == aboutWindow {
+            // Clean up references
+            logInfo("About window closing, cleaning up references")
+            aboutWindowController = nil
         }
     }
 }

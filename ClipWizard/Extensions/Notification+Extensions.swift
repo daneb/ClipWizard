@@ -5,4 +5,5 @@ extension Notification.Name {
     static let toggleClipboardMonitoring = Notification.Name("toggleClipboardMonitoring")
     static let clearClipboardHistory = Notification.Name("clearClipboardHistory")
     static let copyLastClipboardItem = Notification.Name("copyLastClipboardItem")
+    static let showLogsTab = Notification.Name("showLogsTab")
 }

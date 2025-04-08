@@ -16,7 +16,6 @@ struct SettingsView: View {
         case rules
         case hotkeys
         case logs
-        case about
     }
     
     var body: some View {
@@ -54,14 +53,6 @@ struct SettingsView: View {
                     isSelected: selectedTab == .logs,
                     action: { selectedTab = .logs }
                 )
-                
-                // About tab
-                settingTabButton(
-                    title: "About", 
-                    icon: "info.circle", 
-                    isSelected: selectedTab == .about,
-                    action: { selectedTab = .about }
-                )
             }
             .padding(.horizontal)
             .padding(.top, 8)
@@ -89,8 +80,6 @@ struct SettingsView: View {
                         HotkeysSettingsView(hotkeyManager: hotkeyManager)
                     case .logs:
                         LogsView()
-                    case .about:
-                        AboutView()
                     }
                 }
                 .padding(.horizontal)
@@ -107,6 +96,16 @@ struct SettingsView: View {
             if !UserDefaults.standard.contains(key: "monitoringEnabled") {
                 monitoringEnabled = true // Default to true if not set
             }
+            
+            // Set up notification observer for showing logs tab
+            NotificationCenter.default.addObserver(forName: .showLogsTab, object: nil, queue: .main) { notification in
+                selectedTab = .logs
+                logInfo("Switched to Logs tab via notification")
+            }
+        }
+        .onDisappear {
+            // Clean up notification observer
+            NotificationCenter.default.removeObserver(self, name: .showLogsTab, object: nil)
         }
     }
     
@@ -396,39 +395,4 @@ struct RuleListRow: View {
 
 // HotkeysSettingsView is now defined in HotkeysSettingsView.swift
 
-struct AboutView: View {
-    var body: some View {
-        VStack(spacing: 15) {
-            Image(systemName: "clipboard")
-                .font(.system(size: 48))
-                .foregroundColor(.accentColor)
-            
-            Text("ClipWizard")
-                .font(.title)
-                .bold()
-            
-            Text("Version 1.0")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-            
-            Text("A powerful clipboard manager for macOS")
-                .multilineTextAlignment(.center)
-            
-            Divider()
-                .padding(.vertical, 10)
-            
-            Text("ClipWizard monitors your clipboard activity and provides tools to sanitize sensitive information automatically.")
-                .multilineTextAlignment(.center)
-                .font(.body)
-                .padding(.horizontal)
-            
-            Spacer()
-            
-            Text("Created by Your Name")
-                .font(.caption)
-                .foregroundColor(.gray)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
+

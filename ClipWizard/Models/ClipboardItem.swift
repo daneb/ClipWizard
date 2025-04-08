@@ -37,8 +37,12 @@ class ClipboardItem: Identifiable, ObservableObject {
     }
 }
 
-extension ClipboardItem: Equatable {
+extension ClipboardItem: Equatable, Hashable {
     static func == (lhs: ClipboardItem, rhs: ClipboardItem) -> Bool {
         return lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
