@@ -10,7 +10,7 @@ Currently, the project has completed Phases 1 and 2, and has made significant pr
 - ✅ Menu bar integration and UI
 - ✅ Sanitization rules engine
 - ✅ Keyboard shortcut support
-- ✅ Launch-at-login functionality
+- ❌ Launch-at-login functionality (removed due to permission issues)
 - ✅ UI improvements for layout and usability
 - ✅ Fixed AppleScript permission issues
 - ✅ Enhanced error handling for system integrations
@@ -97,11 +97,12 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
   - [x] Core HotkeyManager implementation
   - [x] Connect hotkeys to app functions
   - [x] Implement hotkey customization UI
-- [x] Launch-at-login functionality
-  - [x] Implement service registration with macOS
-  - [x] Add toggle in settings
-  - [x] Fix AppleScript permission issues
-  - [x] Add user-friendly permission request dialogs
+- [x] Launch-at-login functionality (Removed in v0.2.3)
+  - [x] ~~Implement service registration with macOS~~
+  - [x] ~~Add toggle in settings~~
+  - [x] ~~Fix AppleScript permission issues~~
+  - [x] ~~Add user-friendly permission request dialogs~~
+  - [x] Functionality removed due to persistent permission issues on macOS
 - [x] Import/export functionality for rules
   - [x] Add export to JSON format
   - [x] Add import from file

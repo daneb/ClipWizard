@@ -1,4 +1,5 @@
 import SwiftUI
+// Note: LaunchAtLoginService has been removed
 
 struct SettingsView: View {
     @ObservedObject var sanitizationService: SanitizationService
@@ -129,7 +130,6 @@ struct SettingsView: View {
 struct GeneralSettingsView: View {
     @Binding var maxHistoryItems: Int
     @Binding var monitoringEnabled: Bool
-    @State private var launchAtLoginEnabled: Bool = false
     var clipboardMonitor: ClipboardMonitor
     
     var body: some View {
@@ -181,11 +181,6 @@ struct GeneralSettingsView: View {
                 Text("Launch Options")
                     .font(.headline)
                 
-                Toggle("Launch at login", isOn: $launchAtLoginEnabled)
-                    .onChange(of: launchAtLoginEnabled) { oldValue, newValue in
-                        LaunchAtLoginService.shared.setEnabled(newValue)
-                    }
-                
                 Toggle("Show in menu bar", isOn: .constant(true))
                     .disabled(true) // Always enabled for now
                 
@@ -198,10 +193,6 @@ struct GeneralSettingsView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .onAppear {
-            // Initialize launch at login toggle from actual status
-            launchAtLoginEnabled = LaunchAtLoginService.shared.isEnabled()
-        }
     }
 }
 
@@ -274,7 +265,7 @@ struct SanitizationRulesView: View {
                     }
                 }
                 .listStyle(PlainListStyle())
-                .frame(height: 120) // Fixed height for the rules list
+                .frame(height: 200) // Increased height for better visibility
                 
                 Divider()
                 
@@ -365,38 +356,39 @@ struct RuleListRow: View {
     let isSelected: Bool
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
                 Text(rule.name)
                     .fontWeight(isSelected ? .bold : .regular)
                 
-                Text(rule.pattern)
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                    .lineLimit(1)
+                Spacer()
+                
+                if rule.isEnabled {
+                    Text("On")
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.green.opacity(0.2))
+                        .foregroundColor(.green)
+                        .cornerRadius(4)
+                } else {
+                    Text("Off")
+                        .font(.caption)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.gray)
+                        .cornerRadius(4)
+                }
             }
             
-            Spacer()
-            
-            if rule.isEnabled {
-                Text("On")
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(Color.green.opacity(0.2))
-                    .foregroundColor(.green)
-                    .cornerRadius(4)
-            } else {
-                Text("Off")
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.gray)
-                    .cornerRadius(4)
-            }
+            Text(rule.pattern)
+                .font(.caption)
+                .foregroundColor(.gray)
+                .lineLimit(2) // Allow up to 2 lines for pattern text
+                .fixedSize(horizontal: false, vertical: true) // Allow text to wrap
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6) // Added more vertical padding
         .background(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
         .cornerRadius(4)
     }

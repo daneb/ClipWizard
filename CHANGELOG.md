@@ -1,6 +1,14 @@
 # ClipWizard Changelog
 
-## Version 0.2.2 (Current Beta)
+## Version 0.2.3 (Current Beta)
+
+### Changes
+- Removed "Launch at Login" functionality due to persistent permission issues
+- Simplified application startup
+- Improved Rules UI with larger display area and better pattern visibility
+- Increased popover size for better usability
+
+## Version 0.2.2
 
 ### New Features
 - Added comprehensive file-based logging system

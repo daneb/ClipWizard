@@ -41,7 +41,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Create the popover
         let popover = NSPopover()
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 400, height: 400)
+        popover.contentSize = NSSize(width: 450, height: 500)
         self.popover = popover
         
         // Create the status item in the menu bar
@@ -86,8 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupHotkeyNotifications()
         hotkeyManager?.loadHotkeys()
         
-        // Initialize launch at login service
-        LaunchAtLoginService.shared.initialize()
+        // Launch at Login functionality removed due to permission issues
     }
     
     @objc func showHistory() {
@@ -126,7 +125,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if popover == nil {
             let popover = NSPopover()
             popover.behavior = .transient
-            popover.contentSize = NSSize(width: 400, height: 400) // Set fixed size for the popover
+            popover.contentSize = NSSize(width: 450, height: 500) // Set fixed size for the popover
             self.popover = popover
         }
         
