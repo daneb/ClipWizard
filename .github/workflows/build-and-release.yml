@@ -1,0 +1,88 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Run on tag push of any tag starting with 'v'
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: Install create-dmg
+      run: brew install create-dmg
+      
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+      
+    - name: Build app
+      run: |
+        xcodebuild -project ClipWizard.xcodeproj -scheme ClipWizard -configuration Release -derivedDataPath ./build clean build
+        
+    - name: Prepare DMG contents
+      run: |
+        mkdir -p build/dmg_contents
+        cp -R build/Release/ClipWizard.app build/dmg_contents/
+        ln -s /Applications build/dmg_contents/Applications
+        
+    - name: Create DMG
+      run: |
+        create-dmg \
+          --volname "ClipWizard ${{ env.VERSION }}" \
+          --volicon "./ClipWizard.icns" \
+          --window-pos 200 120 \
+          --window-size 800 400 \
+          --icon-size 100 \
+          --icon "ClipWizard.app" 200 190 \
+          --hide-extension "ClipWizard.app" \
+          --app-drop-link 600 185 \
+          "ClipWizard-${{ env.VERSION }}.dmg" \
+          "build/dmg_contents"
+        
+    - name: Create ZIP Archive
+      run: |
+        ditto -c -k --keepParent "build/Release/ClipWizard.app" "ClipWizard-${{ env.VERSION }}.zip"
+      
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: ClipWizard ${{ env.VERSION }}
+        body_path: ${{ github.workspace }}/release-notes.md
+        draft: true
+        prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
+        files: |
+          ClipWizard-${{ env.VERSION }}.dmg
+          ClipWizard-${{ env.VERSION }}.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Auto-generate release notes if no release-notes.md exists
+    - name: Generate Release Notes
+      if: success() && !fileExists('release-notes.md')
+      run: |
+        echo "# ClipWizard ${{ env.VERSION }}" > release-notes.md
+        echo "## Changes" >> release-notes.md
+        echo "" >> release-notes.md
+        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"* %s" >> release-notes.md
+
+    - name: Update Release with Generated Notes
+      if: success() && !fileExists('release-notes.md')
+      uses: softprops/action-gh-release@v1
+      with:
+        name: ClipWizard ${{ env.VERSION }}
+        body_path: ${{ github.workspace }}/release-notes.md
+        draft: true
+        prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

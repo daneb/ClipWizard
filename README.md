@@ -1,92 +1,183 @@
 # ClipWizard
 
-ClipWizard is a powerful clipboard manager for macOS that provides automatic clipboard monitoring, sanitization of sensitive information, and efficient access to your clipboard history.
+<div align="center">
 
-## Current Status
+![ClipWizard Logo](./original.png)
 
-ClipWizard is currently in beta. All core functionality is working, and we're focusing on implementing the remaining features and polishing the UI.
+**A powerful clipboard manager for macOS with advanced sanitization capabilities**
 
-## Features
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
+![Status](https://img.shields.io/badge/status-beta-orange)
 
-### Core Functionality
-- **Automatic Clipboard Monitoring**: Continuously monitors clipboard activity
-- **Clipboard History**: Maintains a searchable history of clipboard items
-- **Text and Image Support**: Handles both text and image content
-- **Sanitization Engine**: Automatically detects and sanitizes sensitive information
-- **Menu Bar Integration**: Quick access through the macOS menu bar
+</div>
 
-### Sanitization Capabilities
-- **Pattern Matching**: Uses regular expressions to identify sensitive content
-- **Multiple Sanitization Methods**:
-  - **Mask**: Replace content with asterisks (e.g., *******)
-  - **Rename**: Replace with alternative values
-  - **Obfuscate**: Scramble or hash sensitive data
+## Overview
+
+ClipWizard is a macOS clipboard manager designed for privacy-conscious users, particularly developers and IT professionals who frequently work with sensitive information. It monitors your clipboard activity, maintains a searchable history, and can automatically sanitize sensitive content like passwords, API keys, and personal information based on customizable rules.
+
+## Key Features
+
+### Clipboard Management
+
+- 📋 **Persistent Clipboard History**: Never lose important copied text or images
+- 🔍 **Instant Search**: Quickly find previously copied items
+- 🖼️ **Image Support**: Store and preview images in your clipboard history
+- 🔄 **One-Click Access**: Copy any historical item back to your clipboard with a single click
+
+### Advanced Image Handling
+
+- 🔎 **Smart Hover Preview**: Preview images without overlap
+- ✏️ **Image Editing**: Rotate, adjust brightness and contrast
+- 🎨 **Image Filters**: Apply grayscale, sepia, invert, blur, and sharpen effects
+- 📝 **OCR Technology**: Extract text from images
+- 💾 **Multiple Export Formats**: Save images as PNG, JPEG, TIFF, or BMP
+
+### Privacy & Security
+
+- 🔒 **Automatic Sanitization**: Detect and sanitize sensitive information
+- 🎯 **Pattern Matching**: Use powerful regex patterns to identify sensitive content
+- 🛡️ **Multiple Sanitization Methods**:
+  - **Mask**: Replace with asterisks (•••••••)
+  - **Rename**: Substitute with alternative values
+  - **Obfuscate**: Scramble sensitive data
   - **Remove**: Completely eliminate sensitive information
-- **Rule Management**: Create, edit, and manage sanitization rules
-- **Rule Testing**: Test your patterns before applying them
+- 📝 **Custom Rules**: Create and manage your own sanitization rules
 
-### User Experience
-- **Quick Access**: Rapidly access clipboard history from the menu bar
-- **Search**: Find specific items in your clipboard history
-- **Copy on Click**: One-click copying of history items
-- **Customizable**: Configure history size, monitoring settings, and more
+### Usability
 
-## Development Plan
+- ⌨️ **Keyboard Shortcuts**: Access features without leaving your keyboard
+- 🔔 **Menu Bar Integration**: Quick access through the status menu
+- ⚙️ **Customizable Settings**: Configure history size, appearance, and more
 
-### Phase 1: Core Implementation ✅
-- [x] Basic app structure and menu bar integration
-- [x] Data models for clipboard items and sanitization rules
-- [x] Clipboard monitoring service
-- [x] Sanitization logic with regex pattern matching
+## Screenshots
 
-### Phase 2: UI Development ✅
-- [x] Clipboard history viewer
-- [x] Settings panel
-- [x] Rule management interface
-- [x] Pattern testing functionality
+<div align="center">
+  <em>Screenshots to be added</em>
+</div>
 
-### Phase 3: Advanced Features 🔄
-- [x] Keyboard shortcut support
-- [x] Launch-at-login functionality
-  - [x] Fixed AppleScript permission issues
-  - [x] Added user-friendly permission request dialogs
-- [x] Export/import of rules
-- [x] Enhanced error handling and user feedback
-- [ ] Clipboard synchronization across devices
-- [ ] Advanced image handling
+## Installation
 
-### Phase 4: Polish and Optimization ⏳
-- [ ] Performance optimizations for large clipboard histories
-- [ ] Enhanced security features
-- [ ] Accessibility improvements
-- [ ] Additional themes and customization options
+### Option 1: Download the Pre-built Application
 
-## Technical Stack
+1. Go to the [Releases](https://github.com/daneb/ClipWizard/releases) page
+2. Download the latest `.dmg` file
+3. Open the downloaded file and drag ClipWizard to your Applications folder
+4. Open ClipWizard from your Applications folder
+   - **Note**: When opening for the first time, you may need to right-click the app and select "Open" to bypass macOS security restrictions
 
-- **Language**: Swift
-- **UI Framework**: SwiftUI
-- **Target Platform**: macOS Ventura and later
+### Option 2: Build from Source
 
-## Getting Started
+1. Ensure you have Xcode 15.0 or later installed
+2. Clone this repository:
+   ```bash
+   git clone https://github.com/daneb/ClipWizard.git
+   ```
+3. Open the project in Xcode:
+   ```bash
+   cd ClipWizard
+   open ClipWizard.xcodeproj
+   ```
+4. Build and run the application (⌘+R)
 
-### Requirements
-- macOS Ventura (13.0) or later
-- Xcode 15.0 or later for development
+## Usage Guide
 
-### Installation
-1. Clone the repository
-2. Open the project in Xcode
-3. Build and run the application
+### Getting Started
 
-### Usage
-- Access ClipWizard from the menu bar
-- Configure sanitization rules in the Settings tab
-- View and search clipboard history in the History tab
+1. After launching ClipWizard, you'll see its icon in the menu bar (top-right of your screen)
+2. Click the icon to access the clipboard history and settings
+3. ClipWizard will automatically start monitoring your clipboard
+
+### Managing Clipboard History
+
+- **View History**: Click the menu bar icon and select the History tab
+- **Search**: Type in the search field to filter items
+- **Copy an Item**: Click on any item in the history to copy it to your clipboard
+- **Preview Images**: Hover over image items to see a preview
+
+### Working with Images
+
+- **Image Preview**: Click on an image item to see a detailed view
+- **Edit Images**: Use the Edit tab to adjust brightness, contrast, and apply filters
+- **Extract Text**: Use the OCR button to extract text from images
+- **Save Images**: Click "Save Image" to export in your chosen format
+
+### Setting Up Sanitization Rules
+
+1. Go to the Settings tab
+2. Click "Add Rule" to create a new sanitization rule
+3. Enter a name, pattern (regex), and choose a sanitization method
+4. Test your rule with sample text
+5. Save the rule to apply it automatically to future clipboard contents
+
+### Customizing ClipWizard
+
+- **General Settings**: Adjust history size, startup behavior
+- **Hotkeys**: Configure keyboard shortcuts for quick access
+- **Appearance**: Customize the look and feel
+
+## Troubleshooting
+
+### Common Issues
+
+- **No Icon in Menu Bar**: Make sure ClipWizard is running. Check Activity Monitor if unsure.
+- **Clipboard Monitoring Not Working**: Ensure you've granted appropriate permissions when prompted.
+- **OCR Not Working**: Text recognition works best on clear, high-contrast images.
+
+### Logs
+
+ClipWizard includes a comprehensive logging system to help diagnose issues:
+
+1. Open ClipWizard
+2. Go to Settings → Logs
+3. Review the logs for error messages
+
+## Privacy Statement
+
+- ClipWizard processes all data locally on your Mac
+- No clipboard data is ever sent to external servers
+- No analytics or telemetry is collected
+
+## Roadmap
+
+### Current Development Status
+
+- ✅ Core clipboard monitoring and history
+- ✅ Sanitization engine
+- ✅ Advanced image handling
+- ⏳ Automated testing
+- ⏳ Final UI polish
+
+See the [PROJECT_PLAN.md](./PROJECT_PLAN.md) for detailed development status and roadmap.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions to ClipWizard are welcome and appreciated! Here's how you can contribute:
+
+1. **Report Bugs**: Open an issue describing the bug and steps to reproduce
+2. **Suggest Features**: Have an idea? Open an issue describing your feature request
+3. **Submit Pull Requests**: Want to add a feature or fix a bug yourself?
+   - Fork the repository
+   - Create a new branch (`git checkout -b feature/your-feature`)
+   - Make your changes
+   - Commit with clear messages (`git commit -m 'Add feature'`)
+   - Push to your branch (`git push origin feature/your-feature`)
+   - Open a Pull Request
+
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+ClipWizard is released under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
+## Acknowledgments
+
+- Icon design by [Designer Name/Source]
+- Thanks to the SwiftUI community for resources and inspiration
+- Special thanks to all contributors and beta testers
+
+---
+
+<div align="center">
+  <em>Made with ❤️ for Mac users who value productivity and privacy</em>
+</div>
