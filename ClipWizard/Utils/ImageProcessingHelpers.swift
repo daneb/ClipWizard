@@ -215,7 +215,8 @@ class ImageProcessor {
                 observation.topCandidates(1).first?.string
             }
             
-            let result = recognizedStrings.joined(separator: " ")
+            // Join with newlines instead of spaces to better preserve text layout
+            let result = recognizedStrings.joined(separator: "\n")
             
             DispatchQueue.main.async {
                 completion(result.isEmpty ? "No text found in image" : result)

@@ -1,6 +1,17 @@
 # ClipWizard Changelog
 
-## Version 0.2.8 (Current Beta)
+## Version 0.2.9 (Current Beta)
+
+### Fixes
+- Fixed OCR text copying functionality:
+  - Added text selection capability to OCR text display
+  - Added dedicated "Copy OCR Text" button
+  - Improved OCR text display with monospace font and better formatting
+  - Limited display to 500 lines with option to copy full text
+  - Improved text extraction by preserving layout with line breaks
+  - Enhanced visual design of OCR text area
+
+## Version 0.2.8
 
 ### Technical Improvements
 - Major code refactoring to improve maintainability:

@@ -336,15 +336,42 @@ struct ClipboardItemDetailView: View {
                     Divider()
                         .padding(.vertical, 4)
                     
-                    HStack(alignment: .top) {
-                        Text("OCR Text:")
-                            .fontWeight(.semibold)
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("OCR Text:")
+                                .fontWeight(.semibold)
+                                
+                            Spacer()
+                            
+                            Button(action: {
+                                copyOCRTextToClipboard()
+                            }) {
+                                Label("Copy OCR Text", systemImage: "doc.on.doc")
+                                    .font(.caption)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .help("Copy the full OCR text to clipboard")
+                        }
                         
-                        Text(recognizedText)
-                            .foregroundColor(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineLimit(4)
+                        ScrollView {
+                            Text(recognizedText)
+                                .foregroundColor(.primary)
+                                .font(.system(.body, design: .monospaced))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .textSelection(.enabled)
+                                .lineLimit(nil)
+                                .padding(8)
+                                .background(Color(.textBackgroundColor))
+                                .cornerRadius(6)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                                )
+                        }
+                        .frame(maxHeight: 120)
                     }
+                    .padding(.top, 4)
                 }
             }
             .font(.caption)
@@ -490,6 +517,12 @@ struct ClipboardItemDetailView: View {
     
     // MARK: - Helper Methods
     
+    private func copyOCRTextToClipboard() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(recognizedText, forType: .string)
+    }
+    
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d, yyyy 'at' h:mm a"
@@ -507,7 +540,14 @@ struct ClipboardItemDetailView: View {
         isPerformingOCR = true
         
         ImageProcessor.performOCR(on: nsImage) { result in
-            self.recognizedText = result
+            // Limit OCR text to reasonable size if needed (approximately 500 lines)
+            let lines = result.components(separatedBy: .newlines)
+            if lines.count > 500 {
+                let truncatedLines = Array(lines.prefix(500))
+                self.recognizedText = truncatedLines.joined(separator: "\n") + "\n\n[... Text truncated. Use 'Copy OCR Text' to get full content ...]" 
+            } else {
+                self.recognizedText = result
+            }
             self.isPerformingOCR = false
         }
     }
