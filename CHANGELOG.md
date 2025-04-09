@@ -1,6 +1,23 @@
 # ClipWizard Changelog
 
-## Version 0.2.7 (Current Beta)
+## Version 0.2.8 (Current Beta)
+
+### Technical Improvements
+- Major code refactoring to improve maintainability:
+  - Decomposed large ClipboardHistoryView file into smaller, focused components
+  - Created dedicated component files for ClipboardItemRow, ImagePreviewOverlay, and ClipboardItemDetailView
+  - Extracted image processing logic into centralized ImageProcessingHelpers utility
+  - Added UI extensions in separate files for better code organization
+  - Improved overall code structure with better separation of concerns
+  - Enhanced file organization with logical directory structure
+
+### Benefits
+- Improved code maintainability and readability
+- Reduced file sizes for easier navigation
+- Better component isolation for future enhancements
+- No functionality changes or regressions
+
+## Version 0.2.7
 
 ### New Features
 - Enhanced image handling with advanced features:
