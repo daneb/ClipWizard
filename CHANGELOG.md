@@ -1,6 +1,25 @@
 # ClipWizard Changelog
 
-## Version 0.2.6 (Current Beta)
+## Version 0.2.7 (Current Beta)
+
+### New Features
+- Enhanced image handling with advanced features:
+  - Smart hover preview positioning to prevent overlap with content
+  - Image editing capabilities including rotation, brightness, and contrast
+  - Multiple image filters (grayscale, sepia, invert, blur, sharpen)
+  - OCR (Optical Character Recognition) to extract text from images
+  - Enhanced metadata display including file size information
+  - Multiple export format options (PNG, JPEG, TIFF, BMP)
+  - Persistent image adjustments across application sessions
+
+### Technical Improvements
+- Integration with Vision framework for OCR capabilities
+- Integration with Core Image for image adjustments and filtering
+- Improved image preview UI with tabs for different functionality
+- Memory optimizations for image processing
+- Enhanced image export functionality
+
+## Version 0.2.6
 
 ### New Features
 - Added persistence for clipboard history across app restarts

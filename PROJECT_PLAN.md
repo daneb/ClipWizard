@@ -108,10 +108,12 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
   - [x] Add export to JSON format
   - [x] Add import from file
   - [x] Add sharing UI
-- [ ] Advanced image handling
+- [x] Advanced image handling
   - [x] Basic image display in history
-  - [ ] Image preview enhancements
-  - [ ] Potential OCR integration (future)
+  - [x] Image preview enhancements
+  - [x] OCR integration for text extraction
+  - [x] Image editing capabilities
+  - [x] Multiple export formats
 
 ### Phase 4: Testing & Optimization ⏳
 - [x] Performance testing with large clipboard histories
