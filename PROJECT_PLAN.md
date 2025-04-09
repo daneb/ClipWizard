@@ -29,7 +29,8 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 - [x] **Sanitization**: Detect and sanitize sensitive information like passwords, API keys, etc.
 - [x] **User Interface**: Provide an intuitive interface for accessing clipboard history and managing settings
 - [x] **Extensibility**: Allow users to create and manage their own sanitization rules
-- [ ] **Performance**: Ensure minimal system impact while running in the background
+- [x] **Performance**: Ensure minimal system impact while running in the background
+- [x] **Persistence**: Maintain clipboard history across app restarts
 
 ## Architecture
 
@@ -113,8 +114,9 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
   - [ ] Potential OCR integration (future)
 
 ### Phase 4: Testing & Optimization ⏳
-- [ ] Performance testing with large clipboard histories
-- [ ] Memory usage optimization
+- [x] Performance testing with large clipboard histories
+- [x] Memory usage optimization
+- [x] Clipboard history persistence
 - [ ] Add automated tests
   - [ ] Unit tests for services
   - [ ] UI tests for main interactions

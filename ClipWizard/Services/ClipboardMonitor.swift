@@ -3,6 +3,8 @@ import AppKit
 import Combine
 
 class ClipboardMonitor: ObservableObject {
+    // Notification that gets posted whenever the clipboard history changes
+    static let clipboardHistoryChangedNotification = Notification.Name("clipboardHistoryChangedNotification")
     @Published var clipboardHistory: [ClipboardItem] = []
     @Published private(set) var isMonitoring: Bool = false
     private var maxHistoryItems = 50
@@ -13,7 +15,27 @@ class ClipboardMonitor: ObservableObject {
     
     init(sanitizationService: SanitizationService? = nil) {
         self.sanitizationService = sanitizationService
+        
+        // Load saved clipboard items from persistent storage
+        loadSavedHistory()
+        
         startMonitoring()
+    }
+    
+    private func loadSavedHistory() {
+        // Load clipboard history from persistent storage
+        let savedItems = ClipboardStorageManager.loadClipboardHistory()
+        
+        // Only use the loaded items if we have any
+        if !savedItems.isEmpty {
+            // Update each item to have a reference to this monitor
+            savedItems.forEach { $0.typeErasedClipboardMonitor = self }
+            
+            // Set the history to the loaded items
+            clipboardHistory = savedItems
+            
+            logInfo("Loaded \(savedItems.count) clipboard items from persistent storage")
+        }
     }
     
     deinit {
@@ -87,11 +109,23 @@ class ClipboardMonitor: ObservableObject {
             if self.clipboardHistory.count > self.maxHistoryItems {
                 self.clipboardHistory = Array(self.clipboardHistory.prefix(self.maxHistoryItems))
             }
+            
+            // Save the updated history to persistent storage
+            ClipboardStorageManager.saveClipboardHistory(self.clipboardHistory)
+            
+            // Post notification that clipboard history has changed
+            NotificationCenter.default.post(name: ClipboardMonitor.clipboardHistoryChangedNotification, object: nil)
         }
     }
     
     func clearHistory() {
         clipboardHistory.removeAll()
+        
+        // Clear the persistent storage as well
+        ClipboardStorageManager.clearSavedHistory()
+        
+        // Post notification that clipboard history has changed
+        NotificationCenter.default.post(name: ClipboardMonitor.clipboardHistoryChangedNotification, object: nil)
     }
     
     func copyToClipboard(_ item: ClipboardItem) {
@@ -119,6 +153,9 @@ class ClipboardMonitor: ObservableObject {
         // Trim history if needed
         if clipboardHistory.count > maxHistoryItems {
             clipboardHistory = Array(clipboardHistory.prefix(maxHistoryItems))
+            
+            // Save the updated (trimmed) history
+            ClipboardStorageManager.saveClipboardHistory(clipboardHistory)
         }
     }
     

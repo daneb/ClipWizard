@@ -29,7 +29,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var aboutWindowController: NSWindowController?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Initialize the logging service
+        // Initialize the logging service first, as it's used by other components
+        initializeLoggingService()
         logInfo("ClipWizard application starting up")
         
         // Initialize services
@@ -265,7 +266,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func quit() {
+        // Ensure clipboard history is saved before quitting
+        if let clipboardMonitor = clipboardMonitor {
+            ClipboardStorageManager.saveClipboardHistory(clipboardMonitor.getHistory())
+            logInfo("Saved clipboard history before quitting")
+        }
+        
+        // Clean up logging service
+        LoggingService.shared.shutdown()
+        
         NSApp.terminate(nil)
+    }
+    
+    func applicationWillTerminate(_ notification: Notification) {
+        // Final chance to save clipboard history
+        if let clipboardMonitor = clipboardMonitor {
+            ClipboardStorageManager.saveClipboardHistory(clipboardMonitor.getHistory())
+            logInfo("Saved clipboard history at application termination")
+        }
+        
+        // Clean up logging service
+        LoggingService.shared.shutdown()
     }
     
     // Setup hotkey notification handlers
@@ -344,6 +365,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 // MARK: - NSWindowDelegate methods
+// MARK: - Helper Methods
+extension AppDelegate {
+    // Initialize the logging service
+    private func initializeLoggingService() {
+        // This ensures the LoggingService is ready before any component tries to log
+        // The actual implementation might differ based on your LoggingService implementation
+        let _ = LoggingService.shared
+    }
+}
+
+// MARK: - Window Delegate
 extension AppDelegate: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         // Check if this is our about window

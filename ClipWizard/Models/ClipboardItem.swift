@@ -1,7 +1,8 @@
 import Foundation
 import SwiftUI
+import AppKit
 
-enum ClipboardItemType {
+enum ClipboardItemType: String, Codable {
     case text
     case image
     case unknown

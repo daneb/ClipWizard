@@ -1,6 +1,20 @@
 # ClipWizard Changelog
 
-## Version 0.2.5 (Current Beta)
+## Version 0.2.6 (Current Beta)
+
+### New Features
+- Added persistence for clipboard history across app restarts
+- Clipboard items (up to 50) are now saved when app quits
+- Added automatic reloading of clipboard history on app startup
+
+### Technical Improvements
+- Implemented ClipboardStorageManager service for handling persistence
+- Added proper handling of image data in persistence
+- Ensured consistent state between app and storage
+- Implemented clipboard history change notifications
+- Improved logging for clipboard storage operations
+
+## Version 0.2.5
 
 ### Fixes
 - Fixed memory management issue with About window that caused crashes
