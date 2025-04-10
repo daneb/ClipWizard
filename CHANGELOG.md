@@ -1,6 +1,17 @@
 # ClipWizard Changelog
 
-## Version 0.2.9 (Current Beta)
+## Version 0.3.0 (Current Beta)
+
+### Fixes
+- Fixed popover positioning issue:
+  - Corrected the positioning of the clipboard history popover to properly align with the menu bar icon
+  - Improved popup positioning when activated via keyboard shortcuts
+  - Enhanced window positioning to prevent off-screen rendering
+  - Added proper event handling when popover closes
+  - Fixed menu restoration after popover closure
+  - Added X-coordinate adjustment to center the popover under the menu bar icon
+
+## Version 0.2.9
 
 ### Fixes
 - Fixed OCR text copying functionality:

@@ -1,13 +1,21 @@
 #!/bin/bash
 # Script to create a distributable DMG for ClipWizard
 
+# Error handling
+set -e
+trap 'echo "An error occurred. Cleaning up..."; rm -rf "$DMG_DIR"; exit 1' ERR
+
 # Configuration
 APP_NAME="ClipWizard"
-VERSION=$(grep -A 1 "Current Beta" "./CHANGELOG.md" | grep "Version" | sed -E 's/.*Version ([0-9]+\.[0-9]+\.[0-9]+).*/\1/g')
+
+# Extract version from project settings instead of changelog
+# Extract version from CHANGELOG.md
+VERSION=$(grep -A 1 'Current Beta' ./CHANGELOG.md | grep Version | sed -E 's/.*Version ([0-9]+\.[0-9]+\.[0-9]+).*/\1/g')
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 BUILD_DIR="./build"
 DMG_DIR="${BUILD_DIR}/dmg_contents"
-APP_PATH="./build/Release/${APP_NAME}.app"
+DERIVED_DATA_PATH="/Users/danebalia/Library/Developer/Xcode/DerivedData"
+APP_PATH=$(find "$DERIVED_DATA_PATH" -name "ClipWizard.app" -type d | grep -i "Build/Products/Release" | head -n 1)
 
 # Print header
 echo "Creating distributable DMG for ${APP_NAME} version ${VERSION}"
@@ -32,7 +40,14 @@ if [ ! -d "$APP_PATH" ]; then
     exit 1
 fi
 
-# Create DMG directory if it doesn't exist
+# Clean up any previous files
+echo "Cleaning up previous build files..."
+rm -rf "$DMG_DIR"
+rm -f "${DMG_NAME}"
+# Remove any temporary DMG files from failed previous attempts
+find . -name "rw.*\.${DMG_NAME}" -delete
+
+# Create clean DMG directory
 mkdir -p "$DMG_DIR"
 
 # Copy app to DMG directory
@@ -45,6 +60,7 @@ ln -s /Applications "${DMG_DIR}/Applications"
 
 # Create the DMG
 echo "Creating DMG file..."
+
 create-dmg \
     --volname "${APP_NAME} ${VERSION}" \
     --volicon "./ClipWizard.icns" \
@@ -54,9 +70,15 @@ create-dmg \
     --icon-size 100 \
     --icon "${APP_NAME}.app" 200 190 \
     --hide-extension "${APP_NAME}.app" \
-    --app-drop-link 600 185 \
+    --skip-jenkins \
+    --no-internet-enable \
     "${DMG_NAME}" \
-    "${DMG_DIR}" || { echo "DMG creation failed"; exit 1; }
+    "${DMG_DIR}" || { 
+        echo "DMG creation failed"; 
+        # Clean up after failure
+        rm -rf "$DMG_DIR"; 
+        exit 1; 
+    }
 
 # Clean up
 echo "Cleaning up temporary files..."

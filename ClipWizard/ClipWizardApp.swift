@@ -65,16 +65,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Set up the menu
-        let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Show Clipboard History", action: #selector(showHistory), keyEquivalent: "h"))
-        menu.addItem(NSMenuItem(title: "Settings", action: #selector(showSettings), keyEquivalent: ","))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "About ClipWizard", action: #selector(about), keyEquivalent: "a"))
-        menu.addItem(NSMenuItem(title: "View Logs", action: #selector(showLogs), keyEquivalent: "l"))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
-        
-        statusItem?.menu = menu
+        statusItem?.menu = NSMenu()
+        setupMenu()
         
         // Check if we should start monitoring based on user preferences
         let shouldMonitor = UserDefaults.standard.bool(forKey: "monitoringEnabled")
@@ -178,6 +170,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let popover = NSPopover()
             popover.behavior = .transient
             popover.contentSize = NSSize(width: 450, height: 500) // Set fixed size for the popover
+            
+            // Add a delegate to handle popover closing
+            popover.delegate = self
+            
             self.popover = popover
             logInfo("Created new popover instance")
         }
@@ -232,18 +228,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 logInfo("Closed existing popover")
             }
             
-            // Show the popover
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .maxY)
+            // Show the popover anchored correctly to the menu bar item
+            // Use minY instead of maxY to ensure it appears below the menu bar
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             logInfo("Showed popover")
             
-            // Position the popover properly
+            // Get the position of the button in screen coordinates
             if let popoverWindow = popover.contentViewController?.view.window {
+                let buttonRect = button.convert(button.bounds, to: nil)
+                let buttonScreenRect = button.window?.convertToScreen(buttonRect) ?? .zero
                 let screenFrame = NSScreen.main?.visibleFrame ?? .zero
                 var newFrame = popoverWindow.frame
                 
-                // Ensure window is not positioned too high
-                if newFrame.origin.y + newFrame.height > screenFrame.height {
-                    newFrame.origin.y = screenFrame.height - newFrame.height - 10
+                // Anchor the popover to the button's X position
+                newFrame.origin.x = buttonScreenRect.origin.x - (newFrame.width / 2) + (buttonScreenRect.width / 2)
+                
+                // Position Y coordinate just below the menu bar
+                newFrame.origin.y = buttonScreenRect.origin.y - newFrame.height - 5
+                
+                // Ensure window is not positioned outside screen bounds horizontally
+                if newFrame.origin.x < screenFrame.origin.x {
+                    newFrame.origin.x = screenFrame.origin.x + 5
+                } else if newFrame.origin.x + newFrame.width > screenFrame.origin.x + screenFrame.width {
+                    newFrame.origin.x = (screenFrame.origin.x + screenFrame.width) - newFrame.width - 5
                 }
                 
                 // Ensure window is not positioned too low
@@ -252,7 +259,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 
                 popoverWindow.setFrame(newFrame, display: true)
-                logInfo("Adjusted popover position")
+                logInfo("Adjusted popover position to align with menu bar item")
             }
             
             // Restore the menu after a short delay
@@ -321,7 +328,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func handleShowClipboardHistory() {
-        showPopoverWithView(index: 0)
+        logInfo("Showing clipboard history via keyboard shortcut")
+        
+        // Always start by ensuring the popover is closed
+        if let popover = popover, popover.isShown {
+            popover.close()
+        }
+        
+        // Small delay to ensure UI is ready
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.showPopoverWithView(index: 0)
+        }
     }
     
     @objc func handleToggleClipboardMonitoring() {
@@ -372,6 +389,35 @@ extension AppDelegate {
         // This ensures the LoggingService is ready before any component tries to log
         // The actual implementation might differ based on your LoggingService implementation
         let _ = LoggingService.shared
+    }
+}
+
+// MARK: - Popover Delegate
+extension AppDelegate: NSPopoverDelegate {
+    func popoverDidClose(_ notification: Notification) {
+        logInfo("Popover closed")
+        
+        // Restore menu immediately
+        if statusItem?.menu == nil {
+            statusItem?.menu = NSMenu()
+            setupMenu()
+            logInfo("Restored menu after popover close")
+        }
+    }
+    
+    // Setup the menu - extracted to a method for reuse
+    private func setupMenu() {
+        guard let menu = statusItem?.menu else { return }
+        
+        menu.removeAllItems() // Clear existing items
+        
+        menu.addItem(NSMenuItem(title: "Show Clipboard History", action: #selector(showHistory), keyEquivalent: "h"))
+        menu.addItem(NSMenuItem(title: "Settings", action: #selector(showSettings), keyEquivalent: ","))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "About ClipWizard", action: #selector(about), keyEquivalent: "a"))
+        menu.addItem(NSMenuItem(title: "View Logs", action: #selector(showLogs), keyEquivalent: "l"))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
     }
 }
 

@@ -38,28 +38,33 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 ### 1. Data Models
 
 #### ClipboardItem
+
 - [x] Properties: ID, timestamp, content type (text/image), original content, sanitized content
 - [x] Responsible for representing individual clipboard entries
 
 #### SanitizationRule
+
 - [x] Properties: ID, name, pattern (regex), rule type, replacement value, enabled status
 - [x] Responsible for defining how specific types of sensitive data should be handled
 
 ### 2. Services
 
 #### ClipboardMonitor
+
 - [x] Monitor clipboard changes and detect content type
 - [x] Add items to history with proper metadata
 - [x] Manage history size according to user preferences
 - [x] Provide methods to clear history and copy items back to clipboard
 
 #### SanitizationService
+
 - [x] Apply sanitization rules using regex patterns
 - [x] Manage different sanitization types (mask, rename, obfuscate, remove)
 - [x] Provide CRUD operations for rules
 - [x] Save/load rules from UserDefaults
 
 #### HotkeyManager
+
 - [x] Base implementation for registering system-wide keyboard shortcuts
 - [x] Connect hotkeys to app functionality
 - [x] Provide user interface for customizing shortcuts
@@ -67,11 +72,13 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 ### 3. User Interface
 
 #### Main Views
+
 - [x] ClipboardHistoryView: Display and search clipboard history
 - [x] SettingsView: Configure app behavior and manage sanitization rules
 - [x] RuleEditView: Create and edit sanitization rules
 
 #### Components
+
 - [x] ClipboardItemRow: Display individual clipboard items in the history list
 - [x] ClipboardItemDetailView: Show detailed view of clipboard items
 - [x] ImagePreviewOverlay: Show image previews on hover
@@ -81,6 +88,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 ## Implementation Progress
 
 ### Phase 1: Foundation ✅
+
 - [x] Set up project structure and basic macOS app
 - [x] Implement core data models (ClipboardItem, SanitizationRule)
 - [x] Create menu bar integration with status item
@@ -88,6 +96,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 - [x] Develop sanitization logic with regex pattern matching
 
 ### Phase 2: User Interface ✅
+
 - [x] Design and implement clipboard history view with search
 - [x] Create settings panel with tab navigation
 - [x] Build rule management interface
@@ -96,6 +105,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 - [x] Fix UI layout and positioning for popovers
 
 ### Phase 3: Features Enhancement ✅
+
 - [x] Complete keyboard shortcut support
   - [x] Core HotkeyManager implementation
   - [x] Connect hotkeys to app functions
@@ -123,6 +133,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
   - [x] Enhance code readability and maintainability
 
 ### Phase 4: Testing & Optimization 🔄
+
 - [x] Performance testing with large clipboard histories
 - [x] Memory usage optimization
 - [x] Clipboard history persistence
@@ -132,6 +143,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 - [ ] User testing and feedback collection
 
 ### Phase 5: Release Preparation ⏳
+
 - [ ] App distribution preparation
   - [ ] Code signing
   - [ ] Notarization
@@ -144,6 +156,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 ## Technical Considerations
 
 ### Privacy & Security
+
 - [x] No network access for clipboard data
 - [x] Local-only processing
 - [x] Secure storage of clipboard history
@@ -151,6 +164,7 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 - [ ] Potential automatic clearing of sensitive data after time period
 
 ### Performance
+
 - [x] Optimized clipboard monitoring
 - [x] Efficient regex matching implementation
 - [x] Performance testing with large histories
@@ -158,42 +172,49 @@ ClipWizard is designed to serve as a powerful clipboard management tool for macO
 - [x] Improved code structure for better maintainability
 
 ### Compatibility
+
 - [x] Target macOS Ventura (13.0) and later
 - [ ] Verify compatibility with Apple Silicon and Intel Macs
 
 ## Next Steps
 
 1. **UI Polish and Refinement**
+
    - [x] Fix popover positioning issues
    - [x] Improve settings layout for better usability
    - [x] Enhance hotkeys UI for better layout and readability
    - [x] Add proper error handling and user feedback
    - [x] Fixed tab navigation issues between History and Settings views
    - [x] Improved code structure with component-based architecture
-   - [ ] Add proper app icon
+   - [x] Add proper app icon
    - [ ] Add visual polish and animations
    - [ ] Improve dark mode support and consistency
+   - [ ] Clipboard window renders too far below its menu bar icon
 
 2. **Testing & Optimization**
+
    - [x] Refactor code for better maintainability
    - [ ] Complete performance testing with large clipboard histories
    - [ ] Optimize memory usage further
    - [ ] Test on different macOS versions (Ventura and Sonoma)
    - [ ] Test with different screen sizes and resolutions
+   - [ ] Test to ensure default sanitization rules works effectively or intuitively
 
 3. **Automated Testing**
-   - [ ] Implement unit tests for core services
-   - [ ] Add UI tests for critical user flows
-   - [ ] Create test utilities and mocks
+   - [x] Implement unit tests for core services
+   - [x] Add UI tests for critical user flows
+   - [x] Create test utilities and mocks
 
 ## Milestones
 
 1. **Alpha Release** ✅
+
    - [x] Core functionality working
    - [x] Basic UI implemented
    - [x] Initial rule set defined
 
 2. **Beta Release** (Current Stage) 🔄
+
    - [x] Keyboard shortcuts implemented
    - [x] Rule import/export functionality implemented
    - [x] Advanced image handling features implemented

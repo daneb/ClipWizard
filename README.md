@@ -172,7 +172,7 @@ ClipWizard is released under the MIT License. See the [LICENSE](./LICENSE) file 
 
 ## Acknowledgments
 
-- Icon design by [Designer Name/Source]
+- Icon design by Grok AI
 - Thanks to the SwiftUI community for resources and inspiration
 - Special thanks to all contributors and beta testers
 
