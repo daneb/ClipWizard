@@ -9,8 +9,22 @@ trap 'echo "An error occurred. Cleaning up..."; rm -rf "$DMG_DIR"; exit 1' ERR
 APP_NAME="ClipWizard"
 
 # Extract version from project settings instead of changelog
-# Extract version from CHANGELOG.md
-VERSION=$(grep -A 1 'Current Beta' ./CHANGELOG.md | grep Version | sed -E 's/.*Version ([0-9]+\.[0-9]+\.[0-9]+).*/\1/g')
+# Extract version from CHANGELOG.md - Get the first version number found in the file
+VERSION=$(head -n 5 ./CHANGELOG.md | grep -o -E 'Version ([0-9]+\.[0-9]+\.[0-9]+)' | head -n 1 | cut -d ' ' -f 2)
+
+# Fallback to Info.plist if CHANGELOG extraction fails
+if [ -z "$VERSION" ]; then
+    echo "Warning: Could not extract version from CHANGELOG.md, trying Info.plist..."
+    VERSION=$(plutil -p "./ClipWizard/Info.plist" | grep CFBundleShortVersionString | sed -E 's/.*"([0-9]+\.[0-9]+)".*/\1.0/g')
+    
+    # If still no version, use a default
+    if [ -z "$VERSION" ]; then
+        echo "Warning: Could not extract version from Info.plist either. Using default version."
+        VERSION="0.0.0"
+    fi
+fi
+
+echo "Using version: $VERSION"
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 BUILD_DIR="./build"
 DMG_DIR="${BUILD_DIR}/dmg_contents"

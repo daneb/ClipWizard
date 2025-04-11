@@ -1,6 +1,12 @@
-# ClipWizard 0.2.9 (Initial GitHub Release)
+# ClipWizard 0.4.0 (April 2025 Update)
 
-This is the first public release of ClipWizard, a privacy-focused clipboard manager for macOS.
+This update focuses on improving stability and fixing UI issues for the ClipWizard clipboard manager.
+
+## What's New
+
+- Fixed popover positioning issue when app is installed via DMG to Applications folder
+- Improved menu bar popover reliability and consistency across different environments
+- Simplified window positioning logic for better user experience
 
 ## Features
 
