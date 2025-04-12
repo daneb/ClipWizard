@@ -1,5 +1,45 @@
 # ClipWizard Release Notes
 
+## Version 0.6.0
+
+### Summary
+
+This release resolves critical database issues, improves thread safety, and enhances the user interface consistency.
+
+### Improvements
+
+#### Database and Thread Safety
+
+- Fixed SQLite multi-threaded access issues that caused crashes
+- Implemented improved thread safety for database operations
+- Added robust queue detection to prevent recursive deadlocks
+- Replaced unavailable SQLite configuration with compatible thread-safety options
+- Added WAL (Write-Ahead Logging) mode for improved database stability
+
+#### Memory Management
+
+- Fixed memory management issues with notification observers
+- Enhanced bridge pattern implementation to prevent retain cycles
+- Improved resource cleanup and lifecycle management
+- Added proper self references in closures to address compiler warnings
+
+#### User Interface
+
+- Improved StorageSettingsView layout and consistency with other settings tabs
+- Enhanced visual organization of storage statistics
+- Added proper padding throughout UI for better visual appearance
+- Standardized spacing and layout elements across settings views
+
+### Installation
+
+Download the latest version from the Releases page and follow the standard installation procedure.
+
+### Upgrade Notes
+
+This version includes significant stability improvements for users who experienced crashes. It's a recommended update for all users.
+
+---
+
 ## Version 0.5.0 (Apr 2025)
 
 ### Summary

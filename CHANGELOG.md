@@ -1,5 +1,39 @@
 # ClipWizard Changelog
 
+## Version 0.6.0 (June 2025)
+
+### Database and Thread Safety Improvements
+
+- Fixed SQLite multi-threaded access issues that caused crashes in installed application
+- Added robust database locking mechanism to prevent concurrent access issues
+- Replaced unavailable SQLite configuration functions with compatible PRAGMA-based approach
+- Implemented WAL (Write-Ahead Logging) mode for improved database concurrency and stability
+- Enhanced SQLite connection management to prevent crashes during application shutdown
+
+### Memory Management Enhancements
+
+- Fixed notification observer lifecycle issues that caused EXC_BAD_ACCESS crashes
+- Improved bridge pattern implementation for clipboard monitoring to prevent retain cycles
+- Added explicit self references in closures to address compiler warnings
+- Enhanced object lifecycle management for clipboard observers
+- Improved thread safety in notification handlers with better dispatch queue management
+
+### UI Refinements
+
+- Enhanced StorageSettingsView layout to match other settings panels
+- Improved spacing, alignment, and padding consistency across all settings tabs
+- Standardized visual presentation of statistics panels
+- Fixed UI inconsistencies in container margins and alignment
+
+### Technical Improvements
+
+- Added safety check for database queue recursion to prevent deadlocks
+- Implemented thread-specific queue identification
+- Enhanced error logging for database operations
+- Improved synchronization mechanics for database access
+- Added proper dispatch queue management for threading model
+
+
 ## Version 0.5.0
 
 ### Improvements

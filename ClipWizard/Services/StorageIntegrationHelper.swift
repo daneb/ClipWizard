@@ -80,20 +80,27 @@ class EnhancedImplementationBridge {
         }
         observers.removeAll()
         
-        // Create a new observer with proper memory management
+        // Create a new observer with proper memory management and thread safety
         let observer = NotificationCenter.default.addObserver(
             forName: EnhancedClipboardMonitor.clipboardHistoryChangedNotification,
             object: nil,
             queue: .main
         ) { _ in
-            // Store a strong reference to the enhanced monitor to avoid it being deallocated
-            let enhancedMonitorRef = objc_getAssociatedObject(bridge, "enhancedMonitor") as? EnhancedClipboardMonitor
-            if let monitor = enhancedMonitorRef {
-                // Update the bridge's history from the referenced monitor
-                bridge.clipboardHistory = monitor.clipboardHistory
+            // Use a weak reference to prevent memory issues
+            DispatchQueue.main.async { [weak bridge] in
+                guard let bridge = bridge else { return }
                 
-                // Post notification for anything observing the bridge
-                NotificationCenter.default.post(name: ClipboardMonitor.clipboardHistoryChangedNotification, object: nil)
+                // Get the enhanced monitor safely
+                if let monitor = objc_getAssociatedObject(bridge, "enhancedMonitor") as? EnhancedClipboardMonitor {
+                    // Update the bridge's history
+                    bridge.clipboardHistory = monitor.clipboardHistory
+                    
+                    // Post notification about the update
+                    NotificationCenter.default.post(
+                        name: ClipboardMonitor.clipboardHistoryChangedNotification,
+                        object: nil
+                    )
+                }
             }
         }
         

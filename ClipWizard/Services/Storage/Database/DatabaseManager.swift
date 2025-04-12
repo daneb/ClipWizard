@@ -33,6 +33,10 @@ class DatabaseManager {
     // Queue for serializing database operations
     private let dbQueue = DispatchQueue(label: "com.clipwizard.database", qos: .background)
     
+    // Track if the database is currently in use to prevent concurrent access
+    private var databaseInUse = false
+    private let accessLock = NSLock()
+    
     // Singleton initialization to ensure only one database connection
     private init() {
         // Set up the queue for identification
@@ -55,6 +59,9 @@ class DatabaseManager {
         // Open database connection
         openDatabase()
         
+        // Enable thread safety
+        setupThreadSafety()
+        
         // Create tables if they don't exist
         createTables()
     }
@@ -66,6 +73,22 @@ class DatabaseManager {
             return
         }
         logInfo("Successfully opened database connection at: \(databasePath)")
+    }
+    
+    /// Set up SQLite thread safety options
+    private func setupThreadSafety() {
+        // Check if SQLite was compiled with thread safety options
+        if sqlite3_threadsafe() != 0 {
+            // SQLite is compiled with thread-safe options
+            logInfo("SQLite is compiled with thread safety support")
+            
+            // Set thread-safe mode pragmas
+            _ = self.executeSQL("PRAGMA journal_mode = WAL;")
+            _ = self.executeSQL("PRAGMA synchronous = NORMAL;")
+            _ = self.executeSQL("PRAGMA foreign_keys = ON;")
+        } else {
+            logWarning("SQLite not compiled with thread-safe options")
+        }
     }
     
     /// Creates the necessary database tables if they don't exist
@@ -110,14 +133,14 @@ class DatabaseManager {
         """
         
         // Execute the SQL statements in a transaction
-        dbQueue.sync {
+        self.executeSync { [self] in
             var errorMessage: String?
             
-            if !executeSQL(createClipboardItemsTableSQL) { 
+            if !self.executeSQL(createClipboardItemsTableSQL) { 
                 errorMessage = "Failed to create clipboard_items table"
-            } else if !executeSQL(createSanitizationRulesTableSQL) {
+            } else if !self.executeSQL(createSanitizationRulesTableSQL) {
                 errorMessage = "Failed to create sanitization_rules table"
-            } else if !executeSQL(createSensitiveDataPatternsTableSQL) {
+            } else if !self.executeSQL(createSensitiveDataPatternsTableSQL) {
                 errorMessage = "Failed to create sensitive_data_patterns table"
             }
             
@@ -127,11 +150,11 @@ class DatabaseManager {
             let createPatternsCategoryIndexSQL = "CREATE INDEX IF NOT EXISTS idx_sensitive_data_patterns_category ON sensitive_data_patterns(category);"
             
             if errorMessage == nil {
-                if !executeSQL(createTimestampIndexSQL) {
+                if !self.executeSQL(createTimestampIndexSQL) {
                     errorMessage = "Failed to create timestamp index"
-                } else if !executeSQL(createRulePatternIndexSQL) {
+                } else if !self.executeSQL(createRulePatternIndexSQL) {
                     errorMessage = "Failed to create rule pattern index"
-                } else if !executeSQL(createPatternsCategoryIndexSQL) {
+                } else if !self.executeSQL(createPatternsCategoryIndexSQL) {
                     errorMessage = "Failed to create patterns category index"
                 }
             }
@@ -151,14 +174,14 @@ class DatabaseManager {
         var statement: OpaquePointer?
         
         // Prepare the statement
-        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) != SQLITE_OK {
-            logError("Error preparing statement: \(String(describing: sqlite3_errmsg(db)))")
+        if sqlite3_prepare_v2(self.db, sql, -1, &statement, nil) != SQLITE_OK {
+            logError("Error preparing statement: \(String(describing: sqlite3_errmsg(self.db)))")
             return false
         }
         
         // Execute the statement
         if sqlite3_step(statement) != SQLITE_DONE {
-            logError("Error executing statement: \(String(describing: sqlite3_errmsg(db)))")
+            logError("Error executing statement: \(String(describing: sqlite3_errmsg(self.db)))")
             sqlite3_finalize(statement)
             return false
         }
@@ -166,6 +189,53 @@ class DatabaseManager {
         // Finalize the statement
         sqlite3_finalize(statement)
         return true
+    }
+    
+    /// Safely executes a database operation, ensuring only one thread accesses the database at a time
+    /// - Parameter operation: The operation to execute
+    private func executeSafe(_ operation: () -> Void) {
+        accessLock.lock()
+        defer { accessLock.unlock() }
+        
+        // Set flag to indicate database is in use
+        databaseInUse = true
+        defer { databaseInUse = false }
+        
+        // Execute the operation
+        operation()
+    }
+    
+    /// Executes a database operation synchronously with thread safety
+    /// - Parameter operation: The operation to perform
+    func executeSync<T>(_ operation: @escaping () -> T) -> T {
+        // If already on the database queue, execute directly but with lock
+        if self.dbQueue.isCurrent {
+            var result: T!
+            self.executeSafe {
+                result = operation()
+            }
+            return result
+        }
+        
+        // Otherwise, synchronize on the queue
+        return self.dbQueue.sync {
+            var result: T!
+            self.executeSafe {
+                result = operation()
+            }
+            return result
+        }
+    }
+    
+    /// Executes a database operation asynchronously with thread safety
+    /// - Parameter operation: The operation to perform
+    func executeAsync(_ operation: @escaping () -> Void) {
+        // Schedule on the database queue
+        self.dbQueue.async { [weak self] in
+            self?.executeSafe {
+                operation()
+            }
+        }
     }
     
     /// Begins a database transaction
@@ -193,8 +263,8 @@ class DatabaseManager {
         var statement: OpaquePointer?
         
         // Prepare the statement
-        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) != SQLITE_OK {
-            logError("Error preparing query: \(String(describing: sqlite3_errmsg(db)))")
+        if sqlite3_prepare_v2(self.db, sql, -1, &statement, nil) != SQLITE_OK {
+            logError("Error preparing query: \(String(describing: sqlite3_errmsg(self.db)))")
             return false
         }
         
@@ -229,8 +299,8 @@ class DatabaseManager {
         }
         
         // Check for errors
-        if sqlite3_errcode(db) != SQLITE_DONE && sqlite3_errcode(db) != SQLITE_ROW {
-            logError("Error during query: \(String(describing: sqlite3_errmsg(db)))")
+        if sqlite3_errcode(self.db) != SQLITE_DONE && sqlite3_errcode(self.db) != SQLITE_ROW {
+            logError("Error during query: \(String(describing: sqlite3_errmsg(self.db)))")
             sqlite3_finalize(statement)
             return false
         }
@@ -249,8 +319,8 @@ class DatabaseManager {
         var statement: OpaquePointer?
         
         // Prepare the statement
-        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) != SQLITE_OK {
-            logError("Error preparing statement: \(String(describing: sqlite3_errmsg(db)))")
+        if sqlite3_prepare_v2(self.db, sql, -1, &statement, nil) != SQLITE_OK {
+            logError("Error preparing statement: \(String(describing: sqlite3_errmsg(self.db)))")
             return -1
         }
         
@@ -281,13 +351,13 @@ class DatabaseManager {
         
         // Execute the statement
         if sqlite3_step(statement) != SQLITE_DONE {
-            logError("Error executing statement: \(String(describing: sqlite3_errmsg(db)))")
+            logError("Error executing statement: \(String(describing: sqlite3_errmsg(self.db)))")
             sqlite3_finalize(statement)
             return -1
         }
         
         // Get the ID of the last inserted row if this was an insert
-        let lastInsertRowId = sqlite3_last_insert_rowid(db)
+        let lastInsertRowId = sqlite3_last_insert_rowid(self.db)
         
         // Finalize the statement
         sqlite3_finalize(statement)
@@ -295,54 +365,46 @@ class DatabaseManager {
         return lastInsertRowId
     }
     
-    /// Performs a database operation on the database queue
+    /// Performs a database operation on the database queue (asynchronous)
     /// - Parameter operation: The operation to perform
     func perform(_ operation: @escaping () -> Void) {
-        dbQueue.async {
-            operation()
-        }
+        executeAsync(operation)
     }
     
-    /// Performs a synchronous database operation on the database queue
+    /// Performs a synchronous database operation with thread safety
     /// - Parameter operation: The operation to perform
     /// - Returns: The result of the operation
     func performSync<T>(_ operation: @escaping () -> T) -> T {
-        // If we're already on the database queue, execute directly to avoid deadlock
-        if dbQueue.isCurrent {
-            return operation()
-        }
-        
-        // Otherwise, perform synchronously on the queue
-        return dbQueue.sync {
-            return operation()
-        }
+        return executeSync(operation)
     }
     
     /// Closes the database connection
     func closeDatabase() {
-        sqlite3_close(db)
-        db = nil
+        self.executeSync { [self] in
+            sqlite3_close(self.db)
+            self.db = nil
+        }
     }
     
     /// Deletes all data from all tables
     func clearAllData() -> Bool {
-        let tables = ["clipboard_items", "sanitization_rules", "sensitive_data_patterns"]
-        
-        return dbQueue.sync {
-            beginTransaction()
+        return self.executeSync { [self] in
+            let tables = ["clipboard_items", "sanitization_rules", "sensitive_data_patterns"]
+            
+            self.beginTransaction()
             
             var success = true
             for table in tables {
-                if !executeSQL("DELETE FROM \(table);") {
+                if !self.executeSQL("DELETE FROM \(table);") {
                     success = false
                     break
                 }
             }
             
             if success {
-                commitTransaction()
+                self.commitTransaction()
             } else {
-                rollbackTransaction()
+                self.rollbackTransaction()
             }
             
             return success
@@ -351,6 +413,8 @@ class DatabaseManager {
     
     /// Vacuum the database to reclaim unused space
     func vacuum() -> Bool {
-        return executeSQL("VACUUM;")
+        return self.executeSync { [self] in
+            return self.executeSQL("VACUUM;")
+        }
     }
 }
