@@ -4,6 +4,7 @@ import Foundation
 
 @main
 struct ClipWizardApp: App {
+
     init() {
         // Initialize the hotkey manager to ensure it's ready
         _ = HotkeyManager.shared
@@ -25,6 +26,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var clipboardMonitor: ClipboardMonitor?
     var hotkeyManager: HotkeyManager?
     
+    // Integration helper
+    private let integrationHelper = StorageIntegrationHelper.shared
+    
     // Property to hold a reference to the about window controller
     private var aboutWindowController: NSWindowController?
     
@@ -33,14 +37,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         initializeLoggingService()
         logInfo("ClipWizard application starting up")
         
-        // Initialize services
-        sanitizationService = SanitizationService()
-        sanitizationService?.loadRules()
-        
-        clipboardMonitor = ClipboardMonitor(sanitizationService: sanitizationService)
+        // Initialize services using the integration helper
+        sanitizationService = integrationHelper.getSanitizationService() as? SanitizationService
+        clipboardMonitor = integrationHelper.getClipboardMonitor() as? ClipboardMonitor
         
         // Create the content view with default tab (History)
-        contentView = ContentView(sanitizationService: sanitizationService!, clipboardMonitor: clipboardMonitor!, initialTab: 0)
+        contentView = integrationHelper.createContentView(initialTab: 0)
         
         // Create the popover
         let popover = NSPopover()
@@ -64,7 +66,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             logInfo("Status bar item created and configured")
         }
         
-        // Set up the menu
+        // Check if we need to show first run info
+        checkFirstRunInfo()
+        
+        // Setup menu items
         statusItem?.menu = NSMenu()
         setupMenu()
         
@@ -180,28 +185,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Create a fresh ContentView with the correct tab selected using the initializer
         do {
-            // Ensure our services are initialized
-            if sanitizationService == nil {
-                sanitizationService = SanitizationService()
-                sanitizationService?.loadRules()
-                logInfo("Initialized sanitization service")
-            }
+            // Ensure our services are initialized through the integration helper
+            sanitizationService = integrationHelper.getSanitizationService() as? SanitizationService
+            clipboardMonitor = integrationHelper.getClipboardMonitor() as? ClipboardMonitor
             
-            if clipboardMonitor == nil {
-                clipboardMonitor = ClipboardMonitor(sanitizationService: sanitizationService)
-                logInfo("Initialized clipboard monitor")
-            }
-            
-            guard let sanitizationService = sanitizationService, let clipboardMonitor = clipboardMonitor else {
-                logError("Failed to initialize required services")
-                return
-            }
-            
-            self.contentView = ContentView(
-                sanitizationService: sanitizationService, 
-                clipboardMonitor: clipboardMonitor,
-                initialTab: index
-            )
+            // Create the view via integration helper
+            self.contentView = integrationHelper.createContentView(initialTab: index)
             
             // Create a hosting controller with the new content view
             if let contentView = self.contentView {
@@ -273,11 +262,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func quit() {
-        // Ensure clipboard history is saved before quitting
-        if let clipboardMonitor = clipboardMonitor {
-            ClipboardStorageManager.saveClipboardHistory(clipboardMonitor.getHistory())
-            logInfo("Saved clipboard history before quitting")
-        }
+        // Use integration helper to perform proper cleanup
+        integrationHelper.performCleanupBeforeTermination()
+        
+        // SQLite implementation saves automatically
+        logInfo("SQLite storage system handles persistence automatically")
         
         // Clean up logging service
         LoggingService.shared.shutdown()
@@ -286,11 +275,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationWillTerminate(_ notification: Notification) {
-        // Final chance to save clipboard history
-        if let clipboardMonitor = clipboardMonitor {
-            ClipboardStorageManager.saveClipboardHistory(clipboardMonitor.getHistory())
-            logInfo("Saved clipboard history at application termination")
-        }
+        // Use integration helper to perform proper cleanup
+        integrationHelper.performCleanupBeforeTermination()
+        
+        // SQLite implementation handles persistence automatically
+        logInfo("SQLite storage system performs automatic cleanup")
         
         // Clean up logging service
         LoggingService.shared.shutdown()
@@ -384,6 +373,37 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 // MARK: - NSWindowDelegate methods
 // MARK: - Helper Methods
 extension AppDelegate {
+    /// Shows application welcome information if it's the first run
+    private func checkFirstRunInfo() {
+        // Skip if user has seen the info
+        if UserDefaults.standard.bool(forKey: "firstRunInfoShown") {
+            return
+        }
+        
+        // Only show after the user has accumulated some clipboard history
+        let historyCount = clipboardMonitor?.getHistory().count ?? 0
+        if historyCount >= 5 {
+            let alert = NSAlert()
+            alert.messageText = "Welcome to ClipWizard"
+            alert.informativeText = "ClipWizard uses SQLite for efficient storage of your clipboard history. You can customize settings and privacy options in the Settings menu."
+            alert.alertStyle = .informational
+            alert.addButton(withTitle: "OK")
+            alert.addButton(withTitle: "Show Settings")
+            
+            let response = alert.runModal()
+            
+            if response == .alertSecondButtonReturn { // Show Settings
+                // Show the storage settings tab
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    self?.showPopoverWithView(index: 1) // Show Settings
+                }
+            }
+            
+            // Mark as shown
+            UserDefaults.standard.set(true, forKey: "firstRunInfoShown")
+        }
+    }
+
     // Initialize the logging service
     private func initializeLoggingService() {
         // This ensures the LoggingService is ready before any component tries to log

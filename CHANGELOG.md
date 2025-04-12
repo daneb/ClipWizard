@@ -1,8 +1,73 @@
 # ClipWizard Changelog
 
-## Version 1.0.0 (April 2025 Update)
+## Version 0.5.0
+
+### Improvements
+
+- **Storage System Simplification**:
+
+  - Removed JSON to SQLite migration path
+  - Made SQLite the sole storage backend for all users
+  - Fixed various storage-related bugs and crashes
+  - Improved database access to prevent deadlocks
+
+- **UI Refinements**:
+  - Enhanced Storage settings layout to match other settings tabs
+  - Improved spacing and padding consistency across the interface
+  - Better visual organization of storage statistics
+  - Added welcome information for new users
+
+### Technical Improvements
+
+- Fixed critical database operations deadlock that caused crashes
+- Corrected memory management issues related to notification handling
+- Enhanced clipboard monitor implementation with more robust memory handling
+- Improved thread safety for database operations
+- Implemented queue detection to prevent recursive deadlocks
+
+### Benefits
+
+- Significantly improved application stability
+- Eliminated JSON storage-related migration issues
+- Enhanced user experience with consistent UI styling
+- More reliable clipboard operations
+
+## Version 1.1.0 (May 2025 Update)
 
 ### New Features
+
+- **Advanced Storage System**:
+
+  - Replaced UserDefaults storage with robust SQLite database
+  - Added support for 200+ clipboard history items (previous limit: 50)
+  - Eliminated 4MB storage size limitation
+  - Implemented intelligent data compression for large text content
+  - Added encrypted file storage for clipboard images
+
+- **Enhanced Privacy Protection**:
+
+  - Added automatic sensitive data detection for 15+ pattern types
+  - Implemented intelligent confidence scoring to reduce false positives
+  - Added multiple sanitization strategies (mask, obfuscate, rename, remove)
+  - Added secure deletion with data overwriting for privacy
+  - Added image scanning for sensitive text content
+
+- **Performance Improvements**:
+  - Implemented background processing for non-UI tasks
+  - Added database indexing for faster clipboard history access
+  - Implemented lazy loading for large clipboard histories
+  - Added automatic maintenance and cleanup routines
+
+### Technical Improvements
+
+- Implemented SQLite database architecture with proper transaction support
+- Added migration path from UserDefaults to SQLite
+- Added data access objects (DAOs) for all entity types
+- Implemented file system manager for secure image storage
+- Created integration system for smooth transition between implementations
+- Added comprehensive storage statistics and diagnostics
+
+### Sanitization New Features
 
 - Enhanced Sanitization System:
   - Priority-based rule processing system to ensure most specific rules run first

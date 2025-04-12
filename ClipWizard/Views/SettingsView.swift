@@ -16,6 +16,7 @@ struct SettingsView: View {
         case rules
         case hotkeys
         case logs
+        case storage
     }
     
     var body: some View {
@@ -53,6 +54,14 @@ struct SettingsView: View {
                     isSelected: selectedTab == .logs,
                     action: { selectedTab = .logs }
                 )
+                
+                // Storage tab
+                settingTabButton(
+                    title: "Storage", 
+                    icon: "internaldrive", 
+                    isSelected: selectedTab == .storage,
+                    action: { selectedTab = .storage }
+                )
             }
             .padding(.horizontal)
             .padding(.top, 8)
@@ -80,6 +89,8 @@ struct SettingsView: View {
                         HotkeysSettingsView(hotkeyManager: hotkeyManager)
                     case .logs:
                         LogsView()
+                    case .storage:
+                        StorageSettingsView()
                     }
                 }
                 .padding(.horizontal)
@@ -93,19 +104,25 @@ struct SettingsView: View {
             }
             
             monitoringEnabled = UserDefaults.standard.bool(forKey: "monitoringEnabled")
-            if !UserDefaults.standard.contains(key: "monitoringEnabled") {
+            if UserDefaults.standard.object(forKey: "monitoringEnabled") == nil {
                 monitoringEnabled = true // Default to true if not set
             }
             
-            // Set up notification observer for showing logs tab
+            // Set up notification observers
             NotificationCenter.default.addObserver(forName: .showLogsTab, object: nil, queue: .main) { notification in
                 selectedTab = .logs
                 logInfo("Switched to Logs tab via notification")
             }
+            
+            NotificationCenter.default.addObserver(forName: .showStorageTab, object: nil, queue: .main) { notification in
+                selectedTab = .storage
+                logInfo("Switched to Storage tab via notification")
+            }
         }
         .onDisappear {
-            // Clean up notification observer
+            // Clean up notification observers
             NotificationCenter.default.removeObserver(self, name: .showLogsTab, object: nil)
+            NotificationCenter.default.removeObserver(self, name: .showStorageTab, object: nil)
         }
     }
     

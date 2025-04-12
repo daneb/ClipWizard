@@ -52,9 +52,13 @@ ClipWizard is a macOS clipboard manager designed for privacy-conscious users, pa
 
 ## Screenshots
 
-<div align="center">
-  <em>Screenshots to be added</em>
-</div>
+### Main Window
+
+![Main Window](images/mainWindow.png)
+
+### Rules
+
+![Rules](images/rules.png)
 
 ## Installation
 
