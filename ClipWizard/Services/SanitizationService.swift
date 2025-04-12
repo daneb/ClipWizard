@@ -11,8 +11,11 @@ class SanitizationService: ObservableObject {
     func sanitize(text: String) -> String {
         var result = text
         
+        // Sort rules by priority (higher priority processed first)
+        let sortedRules = rules.filter({ $0.isEnabled }).sorted(by: { $0.priority > $1.priority })
+        
         // Apply each enabled rule
-        for rule in rules.filter({ $0.isEnabled }) {
+        for rule in sortedRules {
             guard let regex = rule.getRegex() else { continue }
             
             // Find all matches
@@ -20,9 +23,38 @@ class SanitizationService: ObservableObject {
             
             // Process matches in reverse order to avoid offset issues when replacing text
             for match in matches.reversed() {
-                // Get the matching range and text
-                guard let range = Range(match.range, in: result) else { continue }
+                // Determine the range to sanitize (preferring capture groups if available)
+                var rangeToSanitize: Range<String.Index>?
+                
+                // Look for capture groups, prioritizing them over the full match
+                if match.numberOfRanges > 1 {
+                    // Try each capture group, taking the first non-empty one
+                    for i in 1..<match.numberOfRanges {
+                        if let captureRange = Range(match.range(at: i), in: result),
+                           !result[captureRange].isEmpty {
+                            let capturedText = String(result[captureRange])
+                            // Ensure we only sanitize significant content (at least 3 chars)
+                            if capturedText.count >= 3 {
+                                rangeToSanitize = captureRange
+                                break
+                            }
+                        }
+                    }
+                }
+                
+                // If no suitable capture group was found, use the full match
+                if rangeToSanitize == nil {
+                    rangeToSanitize = Range(match.range, in: result)
+                }
+                
+                // Make sure we have a valid range
+                guard let range = rangeToSanitize else { continue }
                 let matchedText = String(result[range])
+                
+                // Skip very short matches to avoid false positives (unless it's a specific format like credit card)
+                if matchedText.count < 3 && !rule.name.contains("Credit Card") {
+                    continue
+                }
                 
                 // Apply the rule based on its type
                 let replacement: String

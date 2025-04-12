@@ -1,0 +1,79 @@
+===== ClipWizard Sanitization Test File =====
+
+To be, or not to be, that is the question:
+Whether 'tis nobler in the mind to suffer
+The slings and arrows of outrageous fortune,
+Or to take arms against a sea of troubles
+And by opposing end them. To die—to sleep,
+No more; and by a sleep to say we end
+The heart-ache and the thousand natural shocks
+That flesh is heir to: 'tis a consummation
+Devoutly to be wish'd.
+
+=== Password Patterns ===
+My account password: SuperSecret123!
+database password="db_p@ssw0rd"
+password = 'MyL0ng&StrongP@ssw0rd!'
+PASSWORD: not-a-good-password
+config.password:"AnotherC0mplexP@ss"
+password = "iL0v3MyD0g2023!"
+
+=== API Keys ===
+api_key = "9a87b654c32d1ef0g765h432i1j0k987"
+apiKey: "YT5x2aCbEf3gHij4kLm6nO7pQr8sTu9v"
+auth_token:"12345abcde67890fghij"
+auth-token = '98765zyxwv43210ponml'
+API_KEY = "3f6g9h1j2k5l8m0n3p6q9r"
+
+=== Connection Strings ===
+jdbc:postgresql://localhost:5432/mydb?user=admin&password=secr3t_db_p@ss
+mongodb://admin:mongo_password_2023@localhost:27017/admin
+mysql:"Server=myserver;Database=mydb;Uid=dbuser;Pwd=mysql_p@ss2023;"
+Connection: "Data Source=server;Initial Catalog=db;User ID=user;Password=sql_p@ss;"
+postgresql://user:postgre_password@localhost:5432/database
+
+=== Credit Card Numbers ===
+My VISA card: 4111 1111 1111 1111
+AMEX: 3782-822463-10005
+MasterCard: 5555555555554444
+Discover: 6011000990139424
+Random card number: 3530111333300000
+
+=== Email Addresses ===
+Contact me at john.doe@example.com for more details
+For support, email support@clipwizard.app
+My personal email is jane.smith123@gmail.com
+Business inquiries: business@company-name.co.uk
+Developer contact: dev.team@tech-company.io
+
+=== Mixed Content (Shakespeare + Sensitive Data) ===
+
+What's in a name? That which we call a rose
+By any other name would smell as sweet;
+So Romeo would, were he not Romeo call'd,
+Retain that dear perfection which he owes
+Without that title. My API key is "f1e2d3c4b5a6789" and you can 
+contact me at romeo.montague@verona.it if you need anything.
+
+Double, double toil and trouble;
+Fire burn, and caldron bubble.
+Fillet of a fenny snake,
+In the caldron boil and bake;
+Eye of newt and toe of frog,
+Wool of bat and tongue of dog. 
+Credit card for potion supplies: 4916 9559 7313 6579
+MySQL connection: "Server=witchserver;Database=potions;Uid=witch;Pwd=bubble_trouble_2023;"
+
+Friends, Romans, countrymen, lend me your ears;
+I come to bury Caesar, not to praise him.
+The evil that men do lives after them;
+The good is oft interred with their bones;
+So let it be with Caesar. Password="RomeEmpire44BC!"
+My email is marcus.brutus@roman-senate.gov
+
+It is the east, and Juliet is the sun.
+Arise, fair sun, and kill the envious moon,
+Who is already sick and pale with grief,
+That thou her maid art far more fair than she.
+To contact the Capulet family, please use auth_token="cap1234ulet" or
+email capulet.family@verona.it. Our account password is "JulietRomeo<3".

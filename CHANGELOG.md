@@ -1,6 +1,39 @@
 # ClipWizard Changelog
 
-## Version 0.4.0 (April 2025 Update)
+## Version 1.0.0 (April 2025 Update)
+
+### New Features
+
+- Enhanced Sanitization System:
+  - Priority-based rule processing system to ensure most specific rules run first
+  - Support for detecting and sanitizing additional sensitive data formats:
+    - JWT tokens
+    - GitHub personal access tokens
+    - AWS-style access keys
+    - Generic secret keys with varied formats
+  - New connection string detection for URI-style database connections (user:password@host format)
+  - Conversational format detection for passwords and API keys
+  - Minimum length checks to prevent false positives on short strings
+
+### Improvements
+
+- Enhanced sanitization patterns and algorithm:
+  - Improved regex patterns for all rule types to catch more variations and formats
+  - Password detection now recognizes phrases like "account password is" and variants
+  - API key detection now captures references like "My API key is..."
+  - Connection string detection now supports both parameter-style and URI-style formats
+  - Sanitization algorithm now targets specific sensitive data portions rather than entire matches
+  - Better capture group handling to focus on the sensitive parts of matches
+  - More comprehensive rule set with improved coverage for edge cases
+
+### Fixes
+
+- MongoDB and PostgreSQL connection strings with user:password format now properly sanitized
+- Mixed context references to passwords and API keys now detected
+- Quoted strings containing sensitive data now properly identified
+- Various edge cases where sensitive data wasn't being properly identified
+
+## Version 0.4.0 (March 2025 Update)
 
 ### Fixes
 
