@@ -67,9 +67,19 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    # Check if release-notes.md exists
+    - name: Check for Release Notes file
+      id: check_release_notes
+      run: |
+        if [ -f "release-notes.md" ]; then
+          echo "release_notes_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "release_notes_exists=false" >> $GITHUB_OUTPUT
+        fi
+        
     # Auto-generate release notes if no release-notes.md exists
     - name: Generate Release Notes
-      if: success() && !fileExists('release-notes.md')
+      if: success() && steps.check_release_notes.outputs.release_notes_exists == 'false'
       run: |
         echo "# ClipWizard ${{ env.VERSION }}" > release-notes.md
         echo "## Changes" >> release-notes.md
@@ -77,7 +87,7 @@ jobs:
         git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"* %s" >> release-notes.md
 
     - name: Update Release with Generated Notes
-      if: success() && !fileExists('release-notes.md')
+      if: success() && steps.check_release_notes.outputs.release_notes_exists == 'false'
       uses: softprops/action-gh-release@v1
       with:
         name: ClipWizard ${{ env.VERSION }}
