@@ -27,7 +27,7 @@ jobs:
       
     - name: Build app
       run: |
-        xcodebuild -project ClipWizard.xcodeproj -scheme ClipWizard -configuration Release -derivedDataPath ./build clean build
+        xcodebuild -project ClipWizard.xcodeproj -scheme ClipWizard -configuration Release CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO -derivedDataPath ./build clean build
         
     - name: Prepare DMG contents
       run: |
