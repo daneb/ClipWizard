@@ -31,6 +31,7 @@ struct ClipboardHistoryView: View {
                     
                     TextField("Search", text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
+                        .accessibility(identifier: "SearchField")
                     
                     if !searchText.isEmpty {
                         Button(action: {

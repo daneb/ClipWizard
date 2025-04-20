@@ -140,6 +140,7 @@ struct SettingsView: View {
             .foregroundColor(isSelected ? .accentColor : .primary)
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibility(identifier: title) // Add identifier for UI testing
     }
 }
 

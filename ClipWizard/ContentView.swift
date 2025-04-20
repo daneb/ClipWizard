@@ -58,6 +58,7 @@ struct ContentView: View {
             .cornerRadius(8)
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibility(identifier: title) // Add this for UI testing
     }
 }
 

@@ -17,17 +17,13 @@ final class ClipWizardUITestsLaunchTests: XCTestCase {
         continueAfterFailure = false
     }
 
-    @MainActor
-    func testLaunch() throws {
+    // Simple test that just launches the app without assertions
+    func testAppLaunches() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["--uitesting"] // Use the test mode
         app.launch()
-
-        // Insert steps here to perform after app launch but before taking a screenshot,
-        // such as logging into a test account or navigating somewhere in the app
-
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = "Launch Screen"
-        attachment.lifetime = .keepAlways
-        add(attachment)
+        
+        // Just verify the app exists and launched
+        XCTAssertTrue(app.exists, "App should be running")
     }
 }

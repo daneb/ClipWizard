@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct AboutWindow: View {
-    private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-    private let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.6.1"
     
     var body: some View {
         VStack(spacing: 8) {
@@ -29,7 +28,7 @@ struct AboutWindow: View {
                 .fontWeight(.bold)
             
             // Version
-            Text("Version \(appVersion) (\(buildNumber))")
+            Text("Version \(appVersion)")
                 .font(.caption)
                 .foregroundColor(.secondary)
             

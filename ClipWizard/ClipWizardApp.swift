@@ -4,17 +4,20 @@ import Foundation
 
 @main
 struct ClipWizardApp: App {
-
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     init() {
         // Initialize the hotkey manager to ensure it's ready
         _ = HotkeyManager.shared
     }
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var body: some Scene {
-        Settings {
+        // Empty WindowGroup to avoid showing any window when app launches
+        // The app only shows in the menu bar
+        WindowGroup {
             EmptyView()
         }
+        
     }
 }
 
