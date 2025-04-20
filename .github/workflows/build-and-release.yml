@@ -32,7 +32,8 @@ jobs:
     - name: Prepare DMG contents
       run: |
         mkdir -p build/dmg_contents
-        cp -R build/Release/ClipWizard.app build/dmg_contents/
+        # Find the built app and copy it to the DMG contents directory
+        find ./build -name "ClipWizard.app" -type d -print -exec cp -R {} build/dmg_contents/ \;
         ln -s /Applications build/dmg_contents/Applications
         
     - name: Create DMG
