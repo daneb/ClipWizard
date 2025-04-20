@@ -52,7 +52,14 @@ jobs:
         
     - name: Create ZIP Archive
       run: |
-        ditto -c -k --keepParent "build/Release/ClipWizard.app" "ClipWizard-${{ env.VERSION }}.zip"
+        # Find the app and create a ZIP archive
+        APP_PATH=$(find ./build -name "ClipWizard.app" -type d | head -n 1)
+        if [ -z "$APP_PATH" ]; then
+          echo "Error: Could not find ClipWizard.app in build directory"
+          exit 1
+        fi
+        echo "Found app at: $APP_PATH"
+        ditto -c -k --keepParent "$APP_PATH" "ClipWizard-${{ env.VERSION }}.zip"
       
     - name: Create Release
       id: create_release
