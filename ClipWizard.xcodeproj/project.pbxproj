@@ -534,7 +534,7 @@
 				A7C10F0A2D99B80F00770125 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 		A7C10F0B2D99B80F00770125 /* Build configuration list for PBXNativeTarget "ClipWizard" */ = {
 			isa = XCConfigurationList;
@@ -543,7 +543,7 @@
 				A7C10F0D2D99B80F00770125 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 		A7C10F0E2D99B80F00770125 /* Build configuration list for PBXNativeTarget "ClipWizardTests" */ = {
 			isa = XCConfigurationList;
@@ -552,7 +552,7 @@
 				A7C10F102D99B80F00770125 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 		A7C10F112D99B80F00770125 /* Build configuration list for PBXNativeTarget "ClipWizardUITests" */ = {
 			isa = XCConfigurationList;
@@ -561,7 +561,7 @@
 				A7C10F132D99B80F00770125 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
