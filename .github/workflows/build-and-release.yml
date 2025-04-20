@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*' # Run on tag push of any tag starting with 'v'
 
+permissions:
+  contents: write # This gives the workflow permission to create releases
+
 jobs:
   build:
     runs-on: macos-latest
