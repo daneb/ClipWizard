@@ -4,6 +4,8 @@ struct ClipboardItemRow: View {
     let item: ClipboardItem
     var isSelected: Bool = false
     
+    @State private var loadedImage: NSImage? = nil
+    
     var body: some View {
         HStack(spacing: 0) {
             // Selection indicator
@@ -43,20 +45,37 @@ struct ClipboardItemRow: View {
                 
                 // Content preview
                 if item.type == .text {
-                    Text(item.sanitizedText ?? item.originalText ?? "")
+                    Text(getTextContent())
                         .lineLimit(2)
                         .font(.callout)
                         .foregroundColor(isSelected ? .primary : .secondary)
-                } else if item.type == .image, let nsImage = item.originalImage {
-                    Image(nsImage: nsImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxHeight: 80)
-                        .cornerRadius(4)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                        )
+                } else if item.type == .image {
+                    Group {
+                        if let nsImage = loadedImage ?? item.originalImage {
+                            Image(nsImage: nsImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxHeight: 80)
+                                .cornerRadius(4)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                                )
+                        } else {
+                            // Placeholder while image is loading
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(height: 80)
+                                .cornerRadius(4)
+                                .overlay(
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle())
+                                )
+                                .onAppear {
+                                    loadImage()
+                                }
+                        }
+                    }
                 }
             }
             .padding(.vertical, 8)
@@ -65,6 +84,28 @@ struct ClipboardItemRow: View {
         }
         .contentShape(Rectangle())
         .cornerRadius(6)
+        .onAppear {
+            if item.type == .image && loadedImage == nil && item.originalImage == nil {
+                loadImage()
+            }
+        }
+    }
+    
+    private func loadImage() {
+        // Use the async version for better performance and to avoid UI blocking
+        item.reloadImage { loadedImage in
+            // We need to use a capture list here since self is a struct (not a class)
+            // and 'weak' can only be applied to class types
+            self.loadedImage = loadedImage
+        }
+    }
+    
+    private func getTextContent() -> String {
+        // If text is compressed, decompress it
+        if let decompressedText = item.decompressText() {
+            return item.sanitizedText ?? decompressedText
+        }
+        return item.sanitizedText ?? item.originalText ?? ""
     }
     
     private func formattedDate(_ date: Date) -> String {

@@ -18,6 +18,10 @@ class EnhancedClipboardMonitor: ObservableObject {
     private var sanitizationService: EnhancedSanitizationService?
     let storageManager = EnhancedClipboardStorageManager.shared
     
+    // Memory management
+    private var memoryPressureSource: DispatchSourceMemoryPressure?
+    private var notificationObservers: [NSObjectProtocol] = []
+    
     // Settings
     private var monitoringInterval: TimeInterval = 0.5
     private var automaticCleanupInterval: TimeInterval = 3600 // 1 hour
@@ -28,6 +32,9 @@ class EnhancedClipboardMonitor: ObservableObject {
         
         // Load saved clipboard items
         loadSavedHistory()
+        
+        // Set up memory pressure monitoring
+        setupMemoryPressureMonitoring()
         
         // Start monitoring the clipboard
         startMonitoring()
@@ -54,6 +61,14 @@ class EnhancedClipboardMonitor: ObservableObject {
     
     deinit {
         stopMonitoring()
+        
+        // Remove all notification observers to prevent memory leaks
+        notificationObservers.forEach { NotificationCenter.default.removeObserver($0) }
+        notificationObservers.removeAll()
+        
+        // Cancel memory pressure source
+        memoryPressureSource?.cancel()
+        memoryPressureSource = nil
     }
     
     func startMonitoring() {
@@ -197,6 +212,9 @@ class EnhancedClipboardMonitor: ObservableObject {
     }
     
     func deleteItem(_ item: ClipboardItem) {
+        // First trigger cleanup to release resources
+        item.cleanup()
+        
         // Remove from in-memory array
         if let index = clipboardHistory.firstIndex(where: { $0.id == item.id }) {
             clipboardHistory.remove(at: index)
@@ -255,6 +273,155 @@ class EnhancedClipboardMonitor: ObservableObject {
     
     func setAutomaticCleanupInterval(_ interval: TimeInterval) {
         automaticCleanupInterval = interval
+    }
+    
+    // MARK: - Statistics
+    
+    // MARK: - Memory Management
+    
+    private func setupMemoryPressureMonitoring() {
+        // Set up memory pressure monitoring via ProcessInfo
+        let memoryStatusObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.NSProcessInfoPowerStateDidChange, // Use power state as a proxy for system resource monitoring
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            // Check if we're in a resource-constrained state
+            if ProcessInfo.processInfo.isLowPowerModeEnabled {
+                self?.handleMemoryWarning()
+            }
+        }
+        notificationObservers.append(memoryStatusObserver)
+        
+        // Monitor workspace notifications as another proxy
+        let workspaceMemoryObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, // System resources might be constrained after wake
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.performMemoryCleanup(level: .warning)
+        }
+        notificationObservers.append(workspaceMemoryObserver)
+        
+        // Set up memory pressure source from GCD
+        // Note: This is a more direct way to monitor memory pressure on macOS
+        let memoryPressureSource = DispatchSource.makeMemoryPressureSource(
+            eventMask: [.warning, .critical],
+            queue: DispatchQueue.global(qos: .utility)
+        )
+        
+        memoryPressureSource.setEventHandler { [weak self] in
+            guard let self = self else { return }
+            
+            // Use the source's current event mask to determine the pressure level
+            if let currentEvent = getCurrentMemoryPressure() {
+                // Handle the pressure based on severity
+                if currentEvent == .critical {
+                    self.handleMemoryPressure(.critical)
+                } else if currentEvent == .warning {
+                    self.handleMemoryPressure(.warning)
+                }
+            }
+        }
+        
+        memoryPressureSource.resume()
+        self.memoryPressureSource = memoryPressureSource
+    }
+    
+    private func handleMemoryWarning() {
+        logInfo("Received memory warning from the OS")
+        performMemoryCleanup(level: .warning)
+    }
+    
+    private func handleMemoryPressure(_ pressureEvent: DispatchSource.MemoryPressureEvent) {
+        if pressureEvent == .warning {
+            logInfo("Memory pressure: Warning level")
+            performMemoryCleanup(level: .warning)
+        }
+        
+        if pressureEvent == .critical {
+            logInfo("Memory pressure: Critical level")
+            performMemoryCleanup(level: .critical)
+        }
+    }
+    
+    private enum MemoryPressureLevel {
+        case warning
+        case critical
+    }
+    
+    // Helper method to get current memory pressure level
+    private func getCurrentMemoryPressure() -> DispatchSource.MemoryPressureEvent? {
+        // Check thermal state if available (macOS 10.15+)
+        if #available(macOS 10.15, *) {
+            switch ProcessInfo.processInfo.thermalState {
+            case .critical, .serious:
+                return .critical
+            case .fair:
+                return .warning
+            case .nominal:
+                return .normal
+            @unknown default:
+                return .warning
+            }
+        }
+        
+        // Default to a warning level if we can't determine
+        return .warning
+    }
+    
+    private func performMemoryCleanup(level: MemoryPressureLevel) {
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            guard let self = self else { return }
+            
+            switch level {
+            case .warning:
+                // Free up non-essential memory
+                autoreleasepool {
+                    // Release any cached image data that's not currently visible
+                    for (index, item) in self.clipboardHistory.enumerated() where item.type == .image {
+                        if index > 15 { // Keep first 15 images loaded for quick access
+                            item.unloadImage()
+                        }
+                    }
+                    
+                    // Trim any excessively large text items
+                    for item in self.clipboardHistory where item.type == .text {
+                        if let text = item.originalText, text.count > 10000 {
+                            item.compressText()
+                        }
+                    }
+                }
+                
+            case .critical:
+                // More aggressive memory cleanup
+                autoreleasepool {
+                    // Unload all image data except the first 5
+                    for (index, item) in self.clipboardHistory.enumerated() where item.type == .image {
+                        if index > 5 {
+                            item.unloadImage()
+                        }
+                    }
+                    
+                    // Compress all text data
+                    for item in self.clipboardHistory where item.type == .text {
+                        item.compressText()
+                    }
+                    
+                    // Trim history if needed
+                    let reducedCount = min(self.maxHistoryItems, 50) // Reduce to at most 50 items
+                    if self.clipboardHistory.count > reducedCount {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            self.clipboardHistory = Array(self.clipboardHistory.prefix(reducedCount))
+                        }
+                    }
+                    
+                    // Trigger database cleanup
+                    self.storageManager.performMaintenance()
+                }
+            }
+        }
     }
     
     // MARK: - Statistics

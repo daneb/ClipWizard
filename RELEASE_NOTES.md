@@ -1,5 +1,43 @@
 # ClipWizard Release Notes
 
+## Version 0.7.0 (Upcoming)
+
+### Summary
+
+This release significantly improves memory management throughout the application to ensure ClipWizard runs efficiently even with large clipboard histories or resource-intensive content.
+
+### Improvements
+
+#### Memory Management
+
+- Implemented comprehensive memory pressure handling system
+- Added memory warning detection and automatic cleanup
+- Fixed notification observation memory leaks
+- Implemented lazy loading for clipboard images
+- Added text compression for large clipboard items
+- Optimized image processing with autoreleasepools
+- Added tiered memory cleanup based on pressure severity
+
+#### Performance
+
+- Reduced memory usage for large clipboard histories
+- Improved response time when under memory pressure
+- Enhanced background processing of clipboard content
+- Optimized image handling for better resource utilization
+
+#### UI Enhancements
+
+- Added loading state indicators for lazy-loaded content
+- Improved UI responsiveness during memory-intensive operations
+
+### Installation
+
+Download the latest version from the Releases page and follow the standard installation procedure.
+
+### Upgrade Notes
+
+This version includes significant memory management improvements. It's a recommended update for all users, especially those who frequently copy large text blocks or images.
+
 ## Version 0.6.0
 
 ### Summary
