@@ -1,5 +1,12 @@
 # ClipWizard Release Notes
 
+# ClipWizard 0.7.1
+
+### Summary
+
+😎 Removed annoying initial empty window on app launch.
+---
+
 ## Version 0.7.0 (Upcoming)
 
 ### Summary

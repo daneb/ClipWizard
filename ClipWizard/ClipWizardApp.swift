@@ -14,7 +14,7 @@ struct ClipWizardApp: App {
     var body: some Scene {
         // Empty WindowGroup to avoid showing any window when app launches
         // The app only shows in the menu bar
-        WindowGroup {
+        Settings {
             EmptyView()
         }
         

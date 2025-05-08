@@ -1,9 +1,8 @@
-# ClipWizard 0.7.0
+# ClipWizard 0.7.1
 
 ### Summary
 
-This release significantly improves memory management throughout the application to ensure ClipWizard runs efficiently even with large clipboard histories or resource-intensive content.
-
+😎 Removed annoying initial empty window on app launch.
 ---
 
 ClipWizard continues to be developed with a focus on performance, stability, and user experience. Thank you for using ClipWizard!
